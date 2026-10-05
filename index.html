@@ -15,133 +15,46 @@
     
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #3730a3;
-            --secondary: #f59e0b;
-            --success: #10b981;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --gray: #64748b;
+            --primary: #4f46e5; --primary-dark: #3730a3; --secondary: #f59e0b;
+            --success: #10b981; --danger: #ef4444; --dark: #1e293b; --gray: #64748b;
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f1f5f9;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(79, 70, 229, 0.85)), url('pavimento.jpg') center/cover no-repeat fixed;
-        }
-        
-        .login-card {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-            padding: 40px;
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .logo-login {
-            max-width: 160px;
-            margin-bottom: 20px;
-        }
-        
-        .main-container {
-            background: white;
-            min-height: 100vh;
-        }
-        
-        .sidebar {
-            background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.7);
-            padding: 12px 18px;
-            border-radius: 10px;
-            margin-bottom: 5px;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: block;
-            cursor: pointer;
-        }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: var(--primary);
-            color: white;
-            transform: translateX(5px);
-        }
-        
-        .content-area {
-            padding: 30px;
-            background: #f8fafc;
-            min-height: 100vh;
-        }
-        
-        .card-custom {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            background: white;
-        }
-        
-        .card-header-custom {
-            background: var(--primary);
-            color: white;
-            border-radius: 15px 15px 0 0;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        
-        .btn-primary-custom {
-            background: var(--primary);
-            border: none;
-            border-radius: 10px;
-            padding: 12px 25px;
-            font-weight: 600;
-            transition: all 0.3s;
-            color: white;
-            cursor: pointer;
-        }
-        
-        .btn-primary-custom:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
-            color: white;
-        }
-        
-        .total-display {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-        }
-        
-        .total-amount {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--secondary);
-        }
-        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; margin: 0; padding: 0; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(79, 70, 229, 0.85)), url('pavimento.jpg') center/cover no-repeat fixed; }
+        .login-card { background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 25px 80px rgba(0,0,0,0.4); padding: 40px; max-width: 450px; width: 100%; text-align: center; }
+        .logo-login { max-width: 160px; margin-bottom: 20px; }
+        .main-container { background: white; min-height: 100vh; display: flex; flex-direction: column; }
+        .sidebar { background: linear-gradient(180deg, var(--dark) 0%, #0f172a 100%); color: white; min-height: 100vh; padding: 20px; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 18px; border-radius: 10px; margin-bottom: 5px; transition: all 0.3s; text-decoration: none; display: block; cursor: pointer; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary); color: white; transform: translateX(5px); }
+        .content-area { padding: 30px; background: #f8fafc; flex: 1; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; background: white; }
+        .card-header-custom { background: var(--primary); color: white; border-radius: 15px 15px 0 0; padding: 15px 20px; font-weight: 600; }
+        .btn-primary-custom { background: var(--primary); border: none; border-radius: 10px; padding: 12px 25px; font-weight: 600; transition: all 0.3s; color: white; cursor: pointer; }
+        .btn-primary-custom:hover { background: var(--primary-dark); transform: translateY(-2px); color: white; }
+        .total-display { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; }
+        .total-amount { font-size: 2.5rem; font-weight: bold; color: var(--secondary); }
         .hidden { display: none !important; }
         
+        .footer-credits {
+            text-align: center;
+            padding: 25px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: auto;
+        }
+        .footer-credits a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .footer-credits a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .sidebar { min-height: auto; padding: 15px; }
             .sidebar .nav-link { padding: 10px 15px; font-size: 0.9rem; }
@@ -151,80 +64,18 @@
             .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
             .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         }
-        
-        @media (min-width: 769px) {
-            .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        }
-        
-        .inventory-item {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-        
+        @media (min-width: 769px) { .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+        .inventory-item { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all 0.3s; margin-bottom: 10px; }
         .inventory-item:hover { border-color: var(--primary); background: #f0f0ff; }
         .inventory-item.selected { border-color: var(--success); background: #ecfdf5; }
-        
-        .project-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
-            transition: all 0.3s;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        
-        .trash-item-card {
-            background: white;
-            border-radius: 10px;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border: 2px solid #e2e8f0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s;
-        }
-        
+        .project-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); transition: all 0.3s; }
+        .project-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .trash-item-card { background: white; border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; border: 2px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.3s; }
         .trash-item-card:hover { border-color: var(--primary); }
         .trash-item-card.selected { border-color: var(--success); background: #ecfdf5; }
-        
-        .info-badge {
-            background: #e0e7ff;
-            color: var(--primary);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        
-        .rate-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--secondary);
-        }
-        
-        .contact-info {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-        }
-        
+        .info-badge { background: #e0e7ff; color: var(--primary); padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 15px; }
+        .rate-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--secondary); }
+        .contact-info { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 20px; border-radius: 15px; margin-top: 20px; }
         .contact-info a { color: white; text-decoration: none; }
         .contact-info a:hover { color: var(--secondary); }
     </style>
@@ -251,14 +102,12 @@
 
     <!-- PANEL PRINCIPAL -->
     <div id="mainPanel" class="main-container hidden">
-        <div class="row g-0">
-            <!-- Sidebar -->
+        <div class="row g-0" style="flex: 1;">
             <div class="col-md-3 col-lg-2 sidebar">
                 <div class="text-center mb-4">
                     <img src="logo.png" alt="Logo" class="logo-login rounded-circle bg-white p-2" style="max-width: 90px;">
                     <h6 class="mt-2 mb-0">Quality Pavimentos</h6>
                 </div>
-                
                 <nav class="nav flex-column">
                     <a class="nav-link active" onclick="showSection('nueva', this)">Nueva Cotización</a>
                     <a class="nav-link" onclick="showSection('proyectos', this)">Proyectos</a>
@@ -267,83 +116,46 @@
                     <a class="nav-link" onclick="showSection('inventario', this)">Inventario</a>
                     <a class="nav-link mt-4 text-danger" onclick="logout()">Salir</a>
                 </nav>
-                
                 <div class="contact-info mt-4 d-none d-md-block">
                     <small class="d-block mb-2"><i class="bi bi-whatsapp"></i> <a href="https://wa.me/56928213391" target="_blank">+56 9 2821 3391</a></small>
                     <small class="d-block"><i class="bi bi-instagram"></i> <a href="https://instagram.com/hormigon_estampado.quality" target="_blank">@hormigon_estampado.quality</a></small>
                 </div>
             </div>
 
-            <!-- Contenido -->
             <div class="col-md-9 col-lg-10 content-area">
-                
                 <!-- NUEVA COTIZACIÓN -->
                 <div id="sec-nueva">
                     <h2 class="mb-4">Nueva Cotización</h2>
-                    
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card card-custom">
                                 <div class="card-header-custom">Datos del Cliente</div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Nombre Cliente *</label>
-                                            <input type="text" id="clientName" class="form-control" placeholder="Juan Pérez">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Teléfono *</label>
-                                            <input type="text" id="clientPhone" class="form-control" placeholder="56912345678">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Email *</label>
-                                            <input type="email" id="clientEmail" class="form-control" placeholder="cliente@email.com">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Dirección</label>
-                                            <input type="text" id="clientAddress" class="form-control" placeholder="Dirección del proyecto">
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">Fecha</label>
-                                            <input type="date" id="quoteDate" class="form-control">
-                                        </div>
+                                        <div class="col-md-6 mb-3"><label class="form-label">Nombre Cliente *</label><input type="text" id="clientName" class="form-control" placeholder="Juan Pérez"></div>
+                                        <div class="col-md-6 mb-3"><label class="form-label">Teléfono *</label><input type="text" id="clientPhone" class="form-control" placeholder="56912345678"></div>
+                                        <div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" id="clientEmail" class="form-control" placeholder="cliente@email.com"></div>
+                                        <div class="col-md-6 mb-3"><label class="form-label">Dirección</label><input type="text" id="clientAddress" class="form-control" placeholder="Dirección del proyecto"></div>
+                                        <div class="col-md-6 mb-3"><label class="form-label">Fecha</label><input type="date" id="quoteDate" class="form-control"></div>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="card card-custom">
                                 <div class="card-header-custom">Cálculo por Metro Cuadrado</div>
                                 <div class="card-body">
                                     <div class="row align-items-center">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Superficie (m²) *</label>
-                                            <input type="number" id="surfaceM2" class="form-control form-control-lg" placeholder="Ej: 34" onchange="calculateTotal()">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="alert alert-info mb-0" id="ratesInfo">
-                                                <small><strong>Tarifas:</strong><br>Cargando...</small>
-                                            </div>
-                                        </div>
+                                        <div class="col-md-6"><label class="form-label">Superficie (m²) *</label><input type="number" id="surfaceM2" class="form-control form-control-lg" placeholder="Ej: 34" onchange="calculateTotal()"></div>
+                                        <div class="col-md-6"><div class="alert alert-info mb-0" id="ratesInfo"><small><strong>Tarifas:</strong><br>Cargando...</small></div></div>
                                     </div>
                                     <div class="mt-3 p-3 bg-light rounded">
                                         <div class="row">
-                                            <div class="col-md-4">
-                                                <small class="text-muted">Precio m²</small>
-                                                <div class="fw-bold" id="pricePerM2">$0</div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <small class="text-muted">Superficie</small>
-                                                <div class="fw-bold" id="displayM2">0 m²</div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <small class="text-muted">TOTAL</small>
-                                                <div class="fw-bold text-success" id="subtotalM2">$0</div>
-                                            </div>
+                                            <div class="col-md-4"><small class="text-muted">Precio m²</small><div class="fw-bold" id="pricePerM2">$0</div></div>
+                                            <div class="col-md-4"><small class="text-muted">Superficie</small><div class="fw-bold" id="displayM2">0 m²</div></div>
+                                            <div class="col-md-4"><small class="text-muted">TOTAL</small><div class="fw-bold text-success" id="subtotalM2">$0</div></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="card card-custom">
                                 <div class="card-header-custom d-flex justify-content-between align-items-center">
                                     <span>Items Incluidos en el Precio</span>
@@ -351,37 +163,20 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="info-badge">Estos items ya están contemplados en el valor por m².</div>
-                                    <div id="inventoryList" class="inventory-grid">
-                                        <p class="text-muted">Cargando items...</p>
-                                    </div>
+                                    <div id="inventoryList" class="inventory-grid"><p class="text-muted">Cargando items...</p></div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-4">
                             <div class="card card-custom sticky-top" style="top: 20px;">
                                 <div class="card-header-custom text-center">RESUMEN</div>
                                 <div class="card-body">
                                     <div class="summary-grid">
-                                        <div class="mb-3">
-                                            <small class="text-muted">Cliente</small>
-                                            <div class="fw-bold" id="summaryClient">-</div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <small class="text-muted">Superficie</small>
-                                            <div class="fw-bold" id="summarySurface">0 m²</div>
-                                        </div>
+                                        <div class="mb-3"><small class="text-muted">Cliente</small><div class="fw-bold" id="summaryClient">-</div></div>
+                                        <div class="mb-3"><small class="text-muted">Superficie</small><div class="fw-bold" id="summarySurface">0 m²</div></div>
                                     </div>
-                                    <div class="mb-3">
-                                        <small class="text-muted">Items Incluidos</small>
-                                        <div id="summaryItems" class="small">Ninguno</div>
-                                    </div>
-                                    
-                                    <div class="total-display mt-4">
-                                        <small>TOTAL A COBRAR</small>
-                                        <div class="total-amount" id="totalAmount">$0</div>
-                                    </div>
-
+                                    <div class="mb-3"><small class="text-muted">Items Incluidos</small><div id="summaryItems" class="small">Ninguno</div></div>
+                                    <div class="total-display mt-4"><small>TOTAL A COBRAR</small><div class="total-amount" id="totalAmount">$0</div></div>
                                     <div class="mt-4">
                                         <button class="btn btn-success w-100 mb-2" onclick="generatePDF()">Generar PDF</button>
                                         <button class="btn btn-primary w-100 mb-2" onclick="sendWhatsApp()">WhatsApp</button>
@@ -407,11 +202,10 @@
                         <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
                                 <button class="btn btn-sm btn-primary me-2" onclick="selectAllTrash()">Seleccionar Todo</button>
-                                <button class="btn btn-sm btn-secondary" onclick="deselectAllTrash()">Deseleccionar</button>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-success me-2" onclick="restoreSelected()">Restaurar</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar</button>
+                                <button class="btn btn-sm btn-success me-2" onclick="restoreSelected()">Restaurar Seleccionados</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar Definitivamente</button>
                             </div>
                         </div>
                     </div>
@@ -433,14 +227,7 @@
                         <div class="card-body">
                             <table class="table table-hover">
                                 <thead class="table-dark">
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Cantidad</th>
-                                        <th>Unidad</th>
-                                        <th>Precio Unit.</th>
-                                        <th>Total</th>
-                                        <th>Acciones</th>
-                                    </tr>
+                                    <tr><th>Item</th><th>Cantidad</th><th>Unidad</th><th>Precio Unit.</th><th>Total</th><th>Acciones</th></tr>
                                 </thead>
                                 <tbody id="inventoryTable"></tbody>
                             </table>
@@ -449,12 +236,15 @@
                     </div>
                 </div>
 
+                <!-- FOOTER CRÉDITOS -->
+                <div class="footer-credits">
+                    <p class="mb-0">Desarrollado por <a href="https://instagram.com/digitalmarketing.cl" target="_blank">@digitalmarketing.cl</a></p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
             apiKey: "AIzaSyCHYIrU82gOLazsnKR1rEYyBePBlouJqD8",
             authDomain: "quality-pavimentos.firebaseapp.com",
@@ -487,18 +277,11 @@
         ];
 
         const defaultRates = [
-            { maxM2: 60, price: 34000 },
-            { maxM2: 90, price: 33500 },
-            { maxM2: 100, price: 32000 },
-            { maxM2: 9999, price: 32000 }
+            { maxM2: 60, price: 34000 }, { maxM2: 90, price: 33500 },
+            { maxM2: 100, price: 32000 }, { maxM2: 9999, price: 32000 }
         ];
 
-        let inventory = [];
-        let selectedItems = [];
-        let projects = [];
-        let trash = [];
-        let rates = [];
-        let logoBase64 = null;
+        let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
 
         function loadLogo() {
             return new Promise((resolve, reject) => {
@@ -506,10 +289,8 @@
                 img.crossOrigin = 'Anonymous';
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
+                    canvas.width = img.width; canvas.height = img.height;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
                     logoBase64 = canvas.toDataURL('image/png');
                     resolve(logoBase64);
                 };
@@ -518,33 +299,49 @@
             });
         }
 
+        // --- PERSISTENCIA DE SESIÓN ---
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainPanel').classList.remove('hidden');
+                const savedSection = sessionStorage.getItem('currentSection') || 'nueva';
+                showSection(savedSection, document.querySelector(`.sidebar .nav-link[onclick*="'${savedSection}'"]`));
+                initApp();
+            }
+        });
+
         function login() {
-            if(document.getElementById('username').value === 'admin' && 
-               document.getElementById('password').value === '1234') {
+            if(document.getElementById('username').value === 'admin' && document.getElementById('password').value === '1234') {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('currentSection', 'nueva');
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainPanel').classList.remove('hidden');
                 initApp();
-            } else {
-                alert('Credenciales incorrectas');
+            } else { 
+                alert('Credenciales incorrectas'); 
             }
         }
 
         function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('currentSection');
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainPanel').classList.add('hidden');
         }
 
         function showSection(section, element) {
-            ['nueva', 'proyectos', 'papelera', 'tarifas', 'inventario'].forEach(s => {
-                document.getElementById('sec-' + s).classList.add('hidden');
-            });
+            sessionStorage.setItem('currentSection', section); // Guardar sección actual
+            ['nueva', 'proyectos', 'papelera', 'tarifas', 'inventario'].forEach(s => document.getElementById('sec-' + s).classList.add('hidden'));
             document.getElementById('sec-' + section).classList.remove('hidden');
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
             
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            if(element) element.classList.add('active');
-
+            if(element) {
+                element.classList.add('active');
+            } else {
+                const navLink = document.querySelector(`.sidebar .nav-link[onclick*="'${section}'"]`);
+                if(navLink) navLink.classList.add('active');
+            }
+            
             if(section === 'proyectos') renderProjects();
             if(section === 'papelera') renderTrash();
             if(section === 'tarifas') renderRates();
@@ -554,100 +351,57 @@
         function calculateTotal() {
             const m2 = parseFloat(document.getElementById('surfaceM2').value) || 0;
             let pricePerM2 = 0;
-
-            for (const rate of rates) {
-                if (m2 <= rate.maxM2) {
-                    pricePerM2 = rate.price;
-                    break;
-                }
-            }
-
+            for (const rate of rates) { if (m2 <= rate.maxM2) { pricePerM2 = rate.price; break; } }
             const total = m2 * pricePerM2;
-
             document.getElementById('pricePerM2').textContent = '$' + formatMoney(pricePerM2);
             document.getElementById('displayM2').textContent = m2 + ' m²';
             document.getElementById('subtotalM2').textContent = '$' + formatMoney(total);
             document.getElementById('summarySurface').textContent = m2 + ' m²';
             document.getElementById('totalAmount').textContent = '$' + formatMoney(total);
-
             return { m2, pricePerM2, total };
         }
 
         function renderInventoryList() {
             const container = document.getElementById('inventoryList');
-            if(inventory.length === 0) {
-                container.innerHTML = '<p class="text-muted">No hay items</p>';
-                return;
-            }
-            
+            if(inventory.length === 0) { container.innerHTML = '<p class="text-muted">No hay items</p>'; return; }
             container.innerHTML = inventory.map(item => {
                 const isSelected = selectedItems.find(i => i.id === item.id);
-                return `
-                    <div class="inventory-item ${isSelected ? 'selected' : ''}" onclick="toggleItem(${item.id})">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>${item.name}</strong><br>
-                                <small class="text-muted">${item.qty} ${item.unit}</small>
-                            </div>
-                            <i class="bi ${isSelected ? 'bi-check-circle-fill text-success' : 'bi-circle'} fs-4"></i>
-                        </div>
-                    </div>
-                `;
+                return `<div class="inventory-item ${isSelected ? 'selected' : ''}" onclick="toggleItem(${item.id})">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><strong>${item.name}</strong><br><small class="text-muted">${item.qty} ${item.unit}</small></div>
+                        <i class="bi ${isSelected ? 'bi-check-circle-fill text-success' : 'bi-circle'} fs-4"></i>
+                    </div></div>`;
             }).join('');
         }
 
         function toggleItem(id) {
             const item = inventory.find(i => i.id === id);
             const index = selectedItems.findIndex(i => i.id === id);
-            
-            if(index > -1) {
-                selectedItems.splice(index, 1);
-            } else {
-                selectedItems.push(item);
-            }
-            
-            renderInventoryList();
-            updateSummary();
+            if(index > -1) selectedItems.splice(index, 1); else selectedItems.push(item);
+            renderInventoryList(); updateSummary();
         }
 
         function toggleAllItems() {
-            if(selectedItems.length === inventory.length) {
-                selectedItems = [];
-            } else {
-                selectedItems = [...inventory];
-            }
-            renderInventoryList();
-            updateSummary();
+            if(selectedItems.length === inventory.length) selectedItems = []; else selectedItems = [...inventory];
+            renderInventoryList(); updateSummary();
         }
 
         function updateSummary() {
             document.getElementById('summaryClient').textContent = document.getElementById('clientName').value || '-';
-            
-            if(selectedItems.length === 0) {
-                document.getElementById('summaryItems').innerHTML = '<span class="text-muted">Ninguno</span>';
-            } else {
-                document.getElementById('summaryItems').innerHTML = selectedItems.map(item => 
-                    `<div class="small mb-1"><i class="bi bi-check text-success"></i> ${item.name}</div>`
-                ).join('');
-            }
+            document.getElementById('summaryItems').innerHTML = selectedItems.length === 0 ? '<span class="text-muted">Ninguno</span>' : 
+                selectedItems.map(item => `<div class="small mb-1"><i class="bi bi-check text-success"></i> ${item.name}</div>`).join('');
         }
 
         function renderInventory() {
-            const tbody = document.getElementById('inventoryTable');
-            tbody.innerHTML = inventory.map(item => `
+            document.getElementById('inventoryTable').innerHTML = inventory.map(item => `
                 <tr>
                     <td><input type="text" class="form-control form-control-sm" value="${item.name}" onchange="updateInventory(${item.id}, 'name', this.value)"></td>
                     <td><input type="number" class="form-control form-control-sm" value="${item.qty}" onchange="updateInventory(${item.id}, 'qty', this.value)"></td>
                     <td><input type="text" class="form-control form-control-sm" value="${item.unit}" onchange="updateInventory(${item.id}, 'unit', this.value)"></td>
                     <td><input type="number" class="form-control form-control-sm" value="${item.price}" onchange="updateInventory(${item.id}, 'price', this.value)"></td>
                     <td class="fw-bold">$${formatMoney(item.qty * item.price)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" onclick="deleteInventory(${item.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteInventory(${item.id})"><i class="bi bi-trash"></i></button></td>
+                </tr>`).join('');
         }
 
         async function updateInventory(id, field, value) {
@@ -667,43 +421,27 @@
         }
 
         async function addInventoryItem() {
-            const name = prompt('Nombre del item:');
-            if(!name) return;
-            
+            const name = prompt('Nombre del item:'); if(!name) return;
             const qty = parseFloat(prompt('Cantidad:', '1')) || 1;
             const unit = prompt('Unidad:', 'unid') || 'unid';
             const price = parseFloat(prompt('Precio unitario:', '0')) || 0;
-            
-            inventory.push({
-                id: Date.now(),
-                name, qty, unit, price
-            });
-            
+            inventory.push({ id: Date.now(), name, qty, unit, price });
             await db.collection('settings').doc('inventory').set({ items: inventory });
             renderInventory();
         }
 
         async function saveQuote() {
             const calc = calculateTotal();
-            if(calc.m2 === 0) {
-                alert('Ingrese la superficie en m²');
-                return;
-            }
-
+            if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
             const project = {
-                id: Date.now(),
                 date: document.getElementById('quoteDate').value || new Date().toISOString().split('T')[0],
                 client: document.getElementById('clientName').value || 'Sin nombre',
                 phone: document.getElementById('clientPhone').value,
                 email: document.getElementById('clientEmail').value,
                 address: document.getElementById('clientAddress').value,
-                m2: calc.m2,
-                pricePerM2: calc.pricePerM2,
-                total: calc.total,
-                items: [...selectedItems],
-                status: 'active'
+                m2: calc.m2, pricePerM2: calc.pricePerM2, total: calc.total,
+                items: [...selectedItems], status: 'active'
             };
-
             await db.collection('projects').add(project);
             alert('Proyecto guardado exitosamente');
         }
@@ -711,18 +449,13 @@
         async function renderProjects() {
             const snapshot = await db.collection('projects').where('status', '==', 'active').get();
             projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
             const container = document.getElementById('projectsList');
-            if(projects.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">No hay proyectos guardados</div>';
-                return;
-            }
-
+            if(projects.length === 0) { container.innerHTML = '<div class="alert alert-info">No hay proyectos guardados</div>'; return; }
             container.innerHTML = projects.map(p => `
                 <div class="project-card">
                     <div class="row align-items-center">
                         <div class="col-md-5">
-                            <h5 class="mb-1">${p.client}</h5>
+                            <h5 class="mb-1">${p.client || 'Cliente'}</h5>
                             <small class="text-muted">${p.date} • ${p.m2} m²</small>
                             ${p.address ? `<br><small class="text-muted">${p.address}</small>` : ''}
                         </div>
@@ -736,51 +469,43 @@
                             <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">Eliminar</button>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         async function loadProject(id) {
             const doc = await db.collection('projects').doc(id).get();
-            const project = { id: doc.id, ...doc.data() };
-            if(!project) return;
-
-            document.getElementById('clientName').value = project.client;
-            document.getElementById('clientPhone').value = project.phone;
-            document.getElementById('clientEmail').value = project.email;
-            document.getElementById('clientAddress').value = project.address || '';
-            document.getElementById('quoteDate').value = project.date;
-            document.getElementById('surfaceM2').value = project.m2;
-            selectedItems = [...project.items];
-            
-            showSection('nueva', document.querySelector('.sidebar .nav-link'));
-            calculateTotal();
-            renderInventoryList();
-            updateSummary();
+            if(!doc.exists) { alert('Proyecto no encontrado'); return; }
+            const p = { id: doc.id, ...doc.data() };
+            document.getElementById('clientName').value = p.client || '';
+            document.getElementById('clientPhone').value = p.phone || '';
+            document.getElementById('clientEmail').value = p.email || '';
+            document.getElementById('clientAddress').value = p.address || '';
+            document.getElementById('quoteDate').value = p.date || '';
+            document.getElementById('surfaceM2').value = p.m2 || 0;
+            selectedItems = p.items || [];
+            showSection('nueva', document.querySelector(`.sidebar .nav-link[onclick*="'nueva'"]`));
+            calculateTotal(); renderInventoryList(); updateSummary();
         }
 
         async function resendProject(id) {
             await loadProject(id);
             setTimeout(() => {
-                if(confirm('¿Enviar por WhatsApp?')) {
-                    sendWhatsApp();
-                } else if(confirm('¿Enviar por correo?')) {
-                    sendEmail();
-                }
+                if(confirm('¿Enviar por WhatsApp?')) sendWhatsApp();
+                else if(confirm('¿Enviar por correo?')) sendEmail();
             }, 500);
         }
 
         async function deleteProject(id) {
             if(!confirm('¿Mover a papelera?')) return;
-            
             const doc = await db.collection('projects').doc(id).get();
-            const project = { id: doc.id, ...doc.data() };
-            
+            if(!doc.exists) return;
+            const p = { id: doc.id, ...doc.data() };
             await db.collection('trash').add({
-                ...project,
-                deletedAt: new Date().toISOString()
+                client: p.client || 'Cliente sin nombre',
+                total: p.total || 0,
+                deletedAt: new Date().toISOString(),
+                originalData: p
             });
-            
             await db.collection('projects').doc(id).delete();
             renderProjects();
         }
@@ -788,22 +513,16 @@
         async function renderTrash() {
             const snapshot = await db.collection('trash').get();
             trash = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
             const container = document.getElementById('trashList');
-            if(trash.length === 0) {
-                container.innerHTML = '<div class="alert alert-info">Papelera vacía</div>';
-                return;
-            }
-
+            if(trash.length === 0) { container.innerHTML = '<div class="alert alert-info">Papelera vacía</div>'; return; }
             container.innerHTML = trash.map(p => `
                 <div class="trash-item-card" onclick="toggleTrashItem('${p.id}')" id="trash-${p.id}">
                     <input type="checkbox" id="check-${p.id}" onclick="event.stopPropagation(); toggleTrashItem('${p.id}')">
                     <div class="flex-grow-1">
-                        <h6 class="mb-1">${p.client}</h6>
+                        <h6 class="mb-1">${p.client || 'Cliente sin nombre'}</h6>
                         <small class="text-muted">Eliminado: ${new Date(p.deletedAt).toLocaleString()} • $${formatMoney(p.total)}</small>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function toggleTrashItem(id) {
@@ -814,99 +533,63 @@
         }
 
         function selectAllTrash() {
-            trash.forEach(p => {
-                const card = document.getElementById(`trash-${p.id}`);
-                const checkbox = document.getElementById(`check-${p.id}`);
-                if(card && checkbox) {
-                    checkbox.checked = true;
-                    card.classList.add('selected');
-                }
-            });
-        }
-
-        function deselectAllTrash() {
-            trash.forEach(p => {
-                const card = document.getElementById(`trash-${p.id}`);
-                const checkbox = document.getElementById(`check-${p.id}`);
-                if(card && checkbox) {
-                    checkbox.checked = false;
-                    card.classList.remove('selected');
-                }
+            document.querySelectorAll('#trashList input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+                cb.closest('.trash-item-card').classList.add('selected');
             });
         }
 
         function getSelectedTrashIds() {
-            return trash.filter(p => {
-                const checkbox = document.getElementById(`check-${p.id}`);
-                return checkbox && checkbox.checked;
-            }).map(p => p.id);
+            const checkboxes = document.querySelectorAll('#trashList input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.id.replace('check-', ''));
         }
 
         async function restoreSelected() {
             const ids = getSelectedTrashIds();
-            if(ids.length === 0) {
-                alert('Seleccione al menos un item');
-                return;
-            }
+            if(ids.length === 0) { alert('Seleccione al menos un item'); return; }
             if(!confirm(`¿Restaurar ${ids.length} proyecto(s)?`)) return;
-            
             for(const id of ids) {
                 const doc = await db.collection('trash').doc(id).get();
-                const project = { ...doc.data(), status: 'active' };
-                delete project.deletedAt;
-                await db.collection('projects').add(project);
-                await db.collection('trash').doc(id).delete();
+                if(doc.exists) {
+                    const data = doc.data();
+                    const projectData = data.originalData || { client: data.client, total: data.total, status: 'active' };
+                    projectData.status = 'active';
+                    delete projectData.deletedAt;
+                    await db.collection('projects').add(projectData);
+                    await db.collection('trash').doc(id).delete();
+                }
             }
-            
             renderTrash();
-            alert('Proyectos restaurados');
+            alert('Proyectos restaurados correctamente');
         }
 
         async function deleteSelected() {
             const ids = getSelectedTrashIds();
-            if(ids.length === 0) {
-                alert('Seleccione al menos un item');
-                return;
-            }
-            if(!confirm(`¿Eliminar permanentemente ${ids.length} proyecto(s)?`)) return;
-            
+            if(ids.length === 0) { alert('Seleccione al menos un item'); return; }
+            if(!confirm(`¿Eliminar PERMANENTEMENTE ${ids.length} proyecto(s)? Esta acción no se puede deshacer.`)) return;
             for(const id of ids) {
                 await db.collection('trash').doc(id).delete();
             }
-            
             renderTrash();
+            alert('Proyectos eliminados permanentemente');
         }
 
         async function renderRates() {
             const container = document.getElementById('ratesList');
-            
             container.innerHTML = rates.map((rate, index) => `
                 <div class="rate-card">
                     <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h6 class="mb-1">Hasta ${rate.maxM2 === 9999 ? 'más de 100' : rate.maxM2} m²</h6>
-                            <small class="text-muted">Rango de superficie</small>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small">Precio por m²</label>
-                            <input type="number" class="form-control" value="${rate.price}" id="rate-${index}" onchange="updateRate(${index}, this.value)">
-                        </div>
-                        <div class="col-md-2">
-                            <div class="fw-bold text-success mt-4">$${formatMoney(rate.price)}/m²</div>
-                        </div>
+                        <div class="col-md-6"><h6 class="mb-1">Hasta ${rate.maxM2 === 9999 ? 'más de 100' : rate.maxM2} m²</h6><small class="text-muted">Rango de superficie</small></div>
+                        <div class="col-md-4"><label class="form-label small">Precio por m²</label><input type="number" class="form-control" value="${rate.price}" id="rate-${index}" onchange="updateRate(${index}, this.value)"></div>
+                        <div class="col-md-2"><div class="fw-bold text-success mt-4">$${formatMoney(rate.price)}/m²</div></div>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
-        function updateRate(index, value) {
-            rates[index].price = parseFloat(value) || 0;
-        }
-
+        function updateRate(index, value) { rates[index].price = parseFloat(value) || 0; }
         async function saveRates() {
             await db.collection('settings').doc('rates').set({ rates: rates });
-            alert('Tarifas guardadas exitosamente');
-            updateRatesInfo();
+            alert('Tarifas guardadas exitosamente'); updateRatesInfo();
         }
 
         function updateRatesInfo() {
@@ -922,19 +605,8 @@
 
         async function generatePDF() {
             const calc = calculateTotal();
-            if(calc.m2 === 0) {
-                alert('Ingrese la superficie en m²');
-                return;
-            }
-
-            if(!logoBase64) {
-                try {
-                    await loadLogo();
-                } catch(e) {
-                    console.log('No se pudo cargar el logo');
-                }
-            }
-
+            if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
+            if(!logoBase64) { try { await loadLogo(); } catch(e) {} }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const client = document.getElementById('clientName').value || 'Cliente';
@@ -943,382 +615,108 @@
             const address = document.getElementById('clientAddress').value || '';
             const date = document.getElementById('quoteDate').value || new Date().toLocaleDateString();
             const quoteNumber = 'COT-' + Date.now().toString().slice(-6);
+            const primaryColor = [79, 70, 229], darkColor = [30, 41, 59], grayColor = [100, 116, 139];
 
-            const primaryColor = [79, 70, 229];
-            const darkColor = [30, 41, 59];
-            const grayColor = [100, 116, 139];
-
-            if(logoBase64) {
-                doc.addImage(logoBase64, 'PNG', 15, 15, 30, 30);
-            }
-
-            doc.setFontSize(18);
-            doc.setTextColor(...darkColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('QUALITY PAVIMENTOS', 50, 22);
-            
-            doc.setFontSize(9);
-            doc.setTextColor(...grayColor);
-            doc.setFont(undefined, 'normal');
+            if(logoBase64) doc.addImage(logoBase64, 'PNG', 15, 15, 30, 30);
+            doc.setFontSize(18); doc.setTextColor(...darkColor); doc.setFont(undefined, 'bold'); doc.text('QUALITY PAVIMENTOS', 50, 22);
+            doc.setFontSize(9); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
             doc.text('Construcción y Remodelaciones Quality SpA', 50, 28);
             doc.text('RUT: 78.339.203-8', 50, 33);
             doc.text('WhatsApp: +56 9 2821 3391', 50, 38);
             doc.text('Instagram: @hormigon_estampado.quality', 50, 43);
-
-            doc.setFontSize(28);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('COTIZACIÓN', 195, 25, { align: 'right' });
-            
-            doc.setFontSize(10);
-            doc.setTextColor(...grayColor);
-            doc.setFont(undefined, 'normal');
+            doc.setFontSize(28); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('COTIZACIÓN', 195, 25, { align: 'right' });
+            doc.setFontSize(10); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
             doc.text('N° ' + quoteNumber, 195, 33, { align: 'right' });
             doc.text('Fecha: ' + date, 195, 39, { align: 'right' });
             doc.text('Vigencia: 16 días', 195, 45, { align: 'right' });
-
-            doc.setDrawColor(...primaryColor);
-            doc.setLineWidth(0.5);
-            doc.line(15, 52, 195, 52);
-
-            doc.setFontSize(11);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('COTIZADO PARA', 15, 62);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(...darkColor);
-            doc.setFont(undefined, 'normal');
+            doc.setDrawColor(...primaryColor); doc.setLineWidth(0.5); doc.line(15, 52, 195, 52);
+            doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('COTIZADO PARA', 15, 62);
+            doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
             doc.text(client, 15, 69);
             if(email) doc.text(email, 15, 75);
             if(phone) doc.text('Tel: ' + phone, 15, 81);
             if(address) doc.text(address, 15, 87);
-
-            doc.setFontSize(11);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('CONDICIONES DE PAGO', 110, 62);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(...darkColor);
-            doc.setFont(undefined, 'normal');
-            doc.text('Anticipo: 50% para iniciar', 110, 69);
-            doc.text('Saldo: contra entrega', 110, 75);
-            doc.text('Forma de pago: transferencia bancaria', 110, 81);
-            doc.text('Débito / Crédito / Efectivo', 110, 87);
-
-            doc.autoTable({
-                startY: 95,
-                head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
-                body: [
-                    ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.total)],
-                ],
-                theme: 'plain',
-                headStyles: { 
-                    fillColor: primaryColor,
-                    textColor: 255,
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
-                bodyStyles: {
-                    fontSize: 10,
-                    cellPadding: 5
-                },
-                columnStyles: {
-                    0: { halign: 'left' },
-                    1: { halign: 'center' },
-                    2: { halign: 'right' },
-                    3: { halign: 'right' }
-                },
-                styles: {
-                    lineColor: [226, 232, 240],
-                    lineWidth: 0.3
-                }
-            });
-
+            doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('CONDICIONES DE PAGO', 110, 62);
+            doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
+            doc.text('Anticipo: 50% para iniciar', 110, 69); doc.text('Saldo: contra entrega', 110, 75);
+            doc.text('Forma de pago: transferencia bancaria', 110, 81); doc.text('Débito / Crédito / Efectivo', 110, 87);
+            doc.autoTable({ startY: 95, head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']], body: [['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.total)]], theme: 'plain', headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' }, bodyStyles: { fontSize: 10, cellPadding: 5 }, columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } }, styles: { lineColor: [226, 232, 240], lineWidth: 0.3 } });
             const totalY = doc.lastAutoTable.finalY + 5;
-            doc.setFillColor(241, 245, 255);
-            doc.rect(110, totalY, 85, 12, 'F');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('TOTAL', 115, totalY + 8);
+            doc.setFillColor(241, 245, 255); doc.rect(110, totalY, 85, 12, 'F');
+            doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('TOTAL', 115, totalY + 8);
             doc.text('$' + formatMoney(calc.total), 190, totalY + 8, { align: 'right' });
-
             let currentY = totalY + 20;
-            
             if(selectedItems.length > 0) {
-                doc.setFontSize(12);
-                doc.setTextColor(...primaryColor);
-                doc.setFont(undefined, 'bold');
-                doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
-                
-                doc.setFontSize(9);
-                doc.setTextColor(...darkColor);
-                doc.setFont(undefined, 'normal');
-                currentY += 7;
-                
-                selectedItems.forEach(item => {
-                    doc.text('• ' + item.name + ' (' + item.qty + ' ' + item.unit + ')', 15, currentY);
-                    currentY += 5;
-                });
-                
+                doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
+                doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal'); currentY += 7;
+                selectedItems.forEach(item => { doc.text('• ' + item.name + ' (' + item.qty + ' ' + item.unit + ')', 15, currentY); currentY += 5; });
                 currentY += 8;
             }
-
-            doc.setFontSize(13);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('ALCANCE DEL PROYECTO', 15, currentY);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(...darkColor);
-            doc.setFont(undefined, 'normal');
-            const alcance = [
-                '• Preparación, nivelación y compactación del terreno',
-                '• Instalación de malla ACMA C92',
-                '• Hormigón premezclado HN25, espesor 10 cm',
-                '• Incorporación de fibra de polipropileno',
-                '• Barrera antihumedad de polietileno',
-                '• Endurecedor con color a elección',
-                '• Estampado con moldes profesionales',
-                '• Diseño y color a elección del cliente',
-                '• Juntas y cortes de dilatación',
-                '• Sello acrílico protector de alto rendimiento',
-                '• Limpieza y entrega final del proyecto'
-            ];
-            
-            currentY += 8;
-            alcance.forEach(line => {
-                doc.text(line, 15, currentY);
-                currentY += 6;
-            });
-
-            currentY += 5;
-            doc.setFontSize(12);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('GARANTÍA', 15, currentY);
-            
-            doc.setFontSize(9);
-            doc.setTextColor(...darkColor);
-            doc.setFont(undefined, 'normal');
-            currentY += 7;
-            doc.text('231 días corridos sobre instalación, materiales y terminaciones', 15, currentY);
-            currentY += 5;
-            doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al', 15, currentY);
-            currentY += 5;
-            doc.text('proceso constructivo.', 15, currentY);
-
-            currentY += 10;
-            doc.setFontSize(12);
-            doc.setTextColor(...primaryColor);
-            doc.setFont(undefined, 'bold');
-            doc.text('NOTAS Y TÉRMINOS', 15, currentY);
-            
-            doc.setFontSize(9);
-            doc.setTextColor(...grayColor);
-            doc.setFont(undefined, 'normal');
-            currentY += 7;
-            doc.text('Esta cotización tiene una vigencia de 16 días naturales.', 15, currentY);
-            currentY += 5;
-            doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY);
-            currentY += 5;
-            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY);
-
-            currentY += 15;
-            doc.setDrawColor(...grayColor);
-            doc.setLineWidth(0.3);
-            doc.line(15, currentY, 80, currentY);
-            doc.setFontSize(9);
-            doc.setTextColor(...darkColor);
-            doc.text('Nombre y firma de aceptación', 15, currentY + 5);
-
-            doc.setFillColor(...primaryColor);
-            doc.rect(0, 270, 210, 27, 'F');
-            
-            doc.setFontSize(11);
-            doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'bold');
-            doc.text('Construcción y Remodelaciones Quality SpA', 105, 278, { align: 'center' });
-            
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.text('RUT: 78.339.203-8 | Presupuesto válido por 16 días', 105, 285, { align: 'center' });
-            
-            doc.setFontSize(9);
-            doc.text('WhatsApp: +56 9 2821 3391 | Instagram: @hormigon_estampado.quality', 105, 292, { align: 'center' });
-
+            doc.setFontSize(13); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('ALCANCE DEL PROYECTO', 15, currentY);
+            doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
+            const alcance = ['• Preparación, nivelación y compactación del terreno', '• Instalación de malla ACMA C92', '• Hormigón premezclado HN25, espesor 10 cm', '• Incorporación de fibra de polipropileno', '• Barrera antihumedad de polietileno', '• Endurecedor con color a elección', '• Estampado con moldes profesionales', '• Diseño y color a elección del cliente', '• Juntas y cortes de dilatación', '• Sello acrílico protector de alto rendimiento', '• Limpieza y entrega final del proyecto'];
+            currentY += 8; alcance.forEach(line => { doc.text(line, 15, currentY); currentY += 6; });
+            currentY += 5; doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('GARANTÍA', 15, currentY);
+            doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal'); currentY += 7;
+            doc.text('231 días corridos sobre instalación, materiales y terminaciones', 15, currentY); currentY += 5;
+            doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al', 15, currentY); currentY += 5;
+            doc.text('proceso constructivo.', 15, currentY); currentY += 10;
+            doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('NOTAS Y TÉRMINOS', 15, currentY);
+            doc.setFontSize(9); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal'); currentY += 7;
+            doc.text('Esta cotización tiene una vigencia de 16 días naturales.', 15, currentY); currentY += 5;
+            doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 5;
+            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY); currentY += 15;
+            doc.setDrawColor(...grayColor); doc.setLineWidth(0.3); doc.line(15, currentY, 80, currentY);
+            doc.setFontSize(9); doc.setTextColor(...darkColor); doc.text('Nombre y firma de aceptación', 15, currentY + 5);
+            doc.setFillColor(...primaryColor); doc.rect(0, 270, 210, 27, 'F');
+            doc.setFontSize(11); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold'); doc.text('Construcción y Remodelaciones Quality SpA', 105, 278, { align: 'center' });
+            doc.setFontSize(10); doc.setFont(undefined, 'normal'); doc.text('RUT: 78.339.203-8 | Presupuesto válido por 16 días', 105, 285, { align: 'center' });
+            doc.setFontSize(9); doc.text('WhatsApp: +56 9 2821 3391 | Instagram: @hormigon_estampado.quality', 105, 292, { align: 'center' });
             doc.save('Cotizacion_' + client.replace(/\s+/g, '_') + '_' + quoteNumber + '.pdf');
             return doc;
         }
 
         async function sendWhatsApp() {
-            const calc = calculateTotal();
-            if(calc.m2 === 0) {
-                alert('Ingrese la superficie en m²');
-                return;
-            }
-
+            const calc = calculateTotal(); if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
             const phone = document.getElementById('clientPhone').value.replace(/\D/g, '');
             const client = document.getElementById('clientName').value || 'Cliente';
-            
-            if(!phone) {
-                alert('Ingrese un teléfono');
-                return;
-            }
-
+            if(!phone) { alert('Ingrese un teléfono'); return; }
             await generatePDF();
-
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\n';
-            msg += 'Estimado ' + client + ',\n\n';
-            msg += 'Adjunto encontrará la cotización detallada.\n\n';
-            msg += '📐 *Superficie:* ' + calc.m2 + ' m²\n';
-            msg += '💰 *Valor total:* $' + formatMoney(calc.total) + '\n';
-            msg += '📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
-            
-            if(selectedItems.length > 0) {
-                msg += '*ITEMS INCLUIDOS:*\n';
-                selectedItems.forEach(item => {
-                    msg += '✓ ' + item.name + '\n';
-                });
-                msg += '\n';
-            }
-            
-            msg += '*ALCANCE DEL PROYECTO:*\n';
-            msg += '✓ Preparación y compactación\n';
-            msg += '✓ Malla ACMA C92\n';
-            msg += '✓ Hormigón HN25, 10 cm\n';
-            msg += '✓ Fibra de polipropileno\n';
-            msg += '✓ Barrera antihumedad\n';
-            msg += '✓ Endurecedor con color\n';
-            msg += '✓ Estampado profesional\n';
-            msg += '✓ Juntas y dilatación\n';
-            msg += '✓ Sello acrílico\n';
-            msg += '✓ Limpieza y entrega\n\n';
-            
-            msg += '*GARANTÍA:* 231 días\n\n';
-            msg += '*FORMA DE PAGO:*\n';
-            msg += '• 50% inicio - 50% entrega\n';
-            msg += '• Transferencia/Débito/Crédito/Efectivo\n';
-            msg += '• NO SOLICITAMOS ANTICIPO\n\n';
-            msg += 'Quality SpA\n';
-            msg += 'RUT: 78.339.203-8\n';
-            msg += 'WhatsApp: +56 9 2821 3391\n';
-            msg += 'Instagram: @hormigon_estampado.quality\n';
-            msg += 'Válido 16 días';
-
-            setTimeout(() => {
-                window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
-                alert('✅ PDF descargado. Adjúntelo en WhatsApp.');
-            }, 500);
+            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
+            if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
+            msg += '*ALCANCE DEL PROYECTO:*\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra de polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor con color\n✓ Estampado profesional\n✓ Juntas y dilatación\n✓ Sello acrílico\n✓ Limpieza y entrega\n\n*GARANTÍA:* 231 días\n\n*FORMA DE PAGO:*\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• NO SOLICITAMOS ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality\nVálido 16 días';
+            setTimeout(() => { window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'); alert('✅ PDF descargado. Adjúntelo en WhatsApp.'); }, 500);
         }
 
         async function sendEmail() {
-            const calc = calculateTotal();
-            if(calc.m2 === 0) {
-                alert('Ingrese la superficie en m²');
-                return;
-            }
-
+            const calc = calculateTotal(); if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
             const email = document.getElementById('clientEmail').value;
             const client = document.getElementById('clientName').value || 'Cliente';
-            
-            if(!email) {
-                alert('Ingrese un correo');
-                return;
-            }
-
+            if(!email) { alert('Ingrese un correo'); return; }
             await generatePDF();
-
             const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
-            let body = 'Estimado ' + client + ',\n\n';
-            body += 'Adjunto cotización detallada.\n\n';
-            body += '📐 Superficie: ' + calc.m2 + ' m²\n';
-            body += '💰 Total: $' + formatMoney(calc.total) + '\n';
-            body += ' Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
-            
-            if(selectedItems.length > 0) {
-                body += 'ITEMS INCLUIDOS:\n';
-                selectedItems.forEach(item => {
-                    body += '✓ ' + item.name + '\n';
-                });
-                body += '\n';
-            }
-            
-            body += 'ALCANCE:\n';
-            body += '✓ Preparación y compactación\n';
-            body += '✓ Malla ACMA C92\n';
-            body += '✓ Hormigón HN25, 10 cm\n';
-            body += '✓ Fibra polipropileno\n';
-            body += '✓ Barrera antihumedad\n';
-            body += '✓ Endurecedor color\n';
-            body += '✓ Estampado profesional\n';
-            body += '✓ Juntas dilatación\n';
-            body += '✓ Sello acrílico\n';
-            body += '✓ Limpieza final\n\n';
-            
-            body += 'GARANTÍA: 231 días\n\n';
-            body += 'PAGO:\n';
-            body += '• 50% inicio - 50% entrega\n';
-            body += '• Transferencia/Débito/Crédito/Efectivo\n';
-            body += '• SIN ANTICIPO\n\n';
-            body += 'Quality SpA\n';
-            body += 'RUT: 78.339.203-8\n';
-            body += 'WhatsApp: +56 9 2821 3391\n';
-            body += 'Instagram: @hormigon_estampado.quality';
-
-            setTimeout(() => {
-                window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-                alert('✅ PDF descargado. Adjúntelo en el correo.');
-            }, 500);
+            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
+            if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
+            body += 'ALCANCE:\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor color\n✓ Estampado profesional\n✓ Juntas dilatación\n✓ Sello acrílico\n✓ Limpieza final\n\nGARANTÍA: 231 días\n\nPAGO:\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• SIN ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality';
+            setTimeout(() => { window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); alert('✅ PDF descargado. Adjúntelo en el correo.'); }, 500);
         }
 
-        function formatMoney(amount) {
-            return new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0 }).format(amount);
-        }
+        function formatMoney(amount) { return new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0 }).format(amount); }
 
         async function initApp() {
             document.getElementById('quoteDate').valueAsDate = new Date();
-            
-            try {
-                await loadLogo();
-                console.log('Logo cargado exitosamente');
-            } catch(e) {
-                console.log('No se pudo cargar el logo');
-            }
-            
-            // Cargar datos desde Firebase
+            try { await loadLogo(); } catch(e) {}
             try {
                 const invDoc = await db.collection('settings').doc('inventory').get();
-                if(invDoc.exists) {
-                    inventory = invDoc.data().items;
-                } else {
-                    inventory = defaultInventory;
-                    await db.collection('settings').doc('inventory').set({ items: inventory });
-                }
-                
+                inventory = invDoc.exists ? invDoc.data().items : defaultInventory;
+                if(!invDoc.exists) await db.collection('settings').doc('inventory').set({ items: inventory });
                 const ratesDoc = await db.collection('settings').doc('rates').get();
-                if(ratesDoc.exists) {
-                    rates = ratesDoc.data().rates;
-                } else {
-                    rates = defaultRates;
-                    await db.collection('settings').doc('rates').set({ rates: rates });
-                }
-                
+                rates = ratesDoc.exists ? ratesDoc.data().rates : defaultRates;
+                if(!ratesDoc.exists) await db.collection('settings').doc('rates').set({ rates: rates });
                 updateRatesInfo();
-            } catch(e) {
-                console.log('Error cargando desde Firebase:', e);
-                inventory = defaultInventory;
-                rates = defaultRates;
-                updateRatesInfo();
-            }
-            
+            } catch(e) { inventory = defaultInventory; rates = defaultRates; updateRatesInfo(); }
             selectedItems = [...inventory];
-            renderInventoryList();
-            calculateTotal();
-            updateSummary();
+            renderInventoryList(); calculateTotal(); updateSummary();
         }
     </script>
 </body>
