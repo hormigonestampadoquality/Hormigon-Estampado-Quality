@@ -36,6 +36,34 @@
         .total-amount { font-size: 2.5rem; font-weight: bold; color: var(--secondary); }
         .hidden { display: none !important; }
         
+        .iva-checkbox {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .iva-checkbox:hover {
+            border-color: var(--primary);
+            background: #f0f0ff;
+        }
+        .iva-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .iva-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
         .footer-credits {
             text-align: center;
             padding: 25px 20px;
@@ -148,11 +176,22 @@
                                         <div class="col-md-6"><label class="form-label">Superficie (m²) *</label><input type="number" id="surfaceM2" class="form-control form-control-lg" placeholder="Ej: 34" onchange="calculateTotal()"></div>
                                         <div class="col-md-6"><div class="alert alert-info mb-0" id="ratesInfo"><small><strong>Tarifas:</strong><br>Cargando...</small></div></div>
                                     </div>
+                                    
+                                    <!-- Checkbox IVA -->
+                                    <div class="iva-checkbox">
+                                        <input type="checkbox" id="includeIVA" onchange="calculateTotal()">
+                                        <label for="includeIVA">Incluir IVA 19%</label>
+                                    </div>
+                                    
                                     <div class="mt-3 p-3 bg-light rounded">
                                         <div class="row">
                                             <div class="col-md-4"><small class="text-muted">Precio m²</small><div class="fw-bold" id="pricePerM2">$0</div></div>
                                             <div class="col-md-4"><small class="text-muted">Superficie</small><div class="fw-bold" id="displayM2">0 m²</div></div>
-                                            <div class="col-md-4"><small class="text-muted">TOTAL</small><div class="fw-bold text-success" id="subtotalM2">$0</div></div>
+                                            <div class="col-md-4"><small class="text-muted">Subtotal</small><div class="fw-bold" id="subtotalM2">$0</div></div>
+                                        </div>
+                                        <div class="row mt-2" id="ivaRow" style="display: none;">
+                                            <div class="col-md-6"><small class="text-muted">IVA (19%)</small><div class="fw-bold text-warning" id="ivaAmount">$0</div></div>
+                                            <div class="col-md-6"><small class="text-muted">TOTAL</small><div class="fw-bold text-success" id="totalWithIVA">$0</div></div>
                                         </div>
                                     </div>
                                 </div>
@@ -277,11 +316,10 @@
             { id: 16, name: "Mano de Obra", qty: 1, unit: "servicio", price: 400000 }
         ];
 
-        // TARIFAS SIMPLIFICADAS - Sin rango +100 m² redundante
         const defaultRates = [
             { maxM2: 60, price: 34000 },
             { maxM2: 90, price: 33500 },
-            { maxM2: 9999, price: 32000 }  // 91 m² en adelante
+            { maxM2: 9999, price: 32000 }
         ];
 
         let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
@@ -302,57 +340,7 @@
             });
         }
 
-        // --- LIMPIEZA TOTAL AUTOMÁTICA (Se ejecuta solo una vez) ---
-        async function cleanAllData() {
-            // Verificar si ya se ejecutó la limpieza
-            if (sessionStorage.getItem('dataCleaned') === 'true') {
-                console.log('✅ Limpieza ya ejecutada previamente');
-                return;
-            }
-
-            console.log('🧹 Iniciando limpieza total de datos...');
-            let cleaned = 0;
-
-            try {
-                // Eliminar TODOS los proyectos existentes
-                const projectsSnapshot = await db.collection('projects').get();
-                for (const doc of projectsSnapshot.docs) {
-                    await db.collection('projects').doc(doc.id).delete();
-                    cleaned++;
-                    console.log('🗑️ Proyecto eliminado:', doc.id);
-                }
-
-                // Eliminar TODA la papelera
-                const trashSnapshot = await db.collection('trash').get();
-                for (const doc of trashSnapshot.docs) {
-                    await db.collection('trash').doc(doc.id).delete();
-                    cleaned++;
-                    console.log('🗑️ Papelera eliminada:', doc.id);
-                }
-
-                // Resetear tarifas a las nuevas (sin +100 m²)
-                await db.collection('settings').doc('rates').set({ rates: defaultRates });
-                console.log('💰 Tarifas actualizadas (eliminada tarifa +100 m²)');
-
-                if (cleaned > 0) {
-                    console.log(`✅ Limpieza completada: ${cleaned} documentos eliminados`);
-                    alert(`Sistema limpiado exitosamente.\n\nSe eliminaron ${cleaned} registros antiguos.\nLas tarifas fueron actualizadas.\n\nEl sistema está listo para usar.`);
-                } else {
-                    console.log('✅ No se encontraron datos para limpiar');
-                }
-
-                // Marcar como limpieza completada
-                sessionStorage.setItem('dataCleaned', 'true');
-            } catch (error) {
-                console.error('❌ Error en limpieza:', error);
-            }
-        }
-
-        // --- PERSISTENCIA DE SESIÓN ---
         window.addEventListener('DOMContentLoaded', async () => {
-            // Ejecutar limpieza total al cargar (solo una vez)
-            await cleanAllData();
-            
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainPanel').classList.remove('hidden');
@@ -402,15 +390,31 @@
 
         function calculateTotal() {
             const m2 = parseFloat(document.getElementById('surfaceM2').value) || 0;
+            const includeIVA = document.getElementById('includeIVA').checked;
             let pricePerM2 = 0;
             for (const rate of rates) { if (m2 <= rate.maxM2) { pricePerM2 = rate.price; break; } }
-            const total = m2 * pricePerM2;
+            const subtotal = m2 * pricePerM2;
+            const iva = includeIVA ? subtotal * 0.19 : 0;
+            const total = subtotal + iva;
+            
             document.getElementById('pricePerM2').textContent = '$' + formatMoney(pricePerM2);
             document.getElementById('displayM2').textContent = m2 + ' m²';
-            document.getElementById('subtotalM2').textContent = '$' + formatMoney(total);
+            document.getElementById('subtotalM2').textContent = '$' + formatMoney(subtotal);
             document.getElementById('summarySurface').textContent = m2 + ' m²';
-            document.getElementById('totalAmount').textContent = '$' + formatMoney(total);
-            return { m2, pricePerM2, total };
+            
+            // Mostrar/ocultar fila de IVA
+            const ivaRow = document.getElementById('ivaRow');
+            if (includeIVA) {
+                ivaRow.style.display = 'flex';
+                document.getElementById('ivaAmount').textContent = '$' + formatMoney(iva);
+                document.getElementById('totalWithIVA').textContent = '$' + formatMoney(total);
+                document.getElementById('totalAmount').textContent = '$' + formatMoney(total);
+            } else {
+                ivaRow.style.display = 'none';
+                document.getElementById('totalAmount').textContent = '$' + formatMoney(subtotal);
+            }
+            
+            return { m2, pricePerM2, subtotal, iva, total, includeIVA };
         }
 
         function renderInventoryList() {
@@ -491,7 +495,8 @@
                 phone: document.getElementById('clientPhone').value,
                 email: document.getElementById('clientEmail').value,
                 address: document.getElementById('clientAddress').value,
-                m2: calc.m2, pricePerM2: calc.pricePerM2, total: calc.total,
+                m2: calc.m2, pricePerM2: calc.pricePerM2, subtotal: calc.subtotal,
+                iva: calc.iva, total: calc.total, includeIVA: calc.includeIVA,
                 items: [...selectedItems], status: 'active'
             };
             await db.collection('projects').add(project);
@@ -534,6 +539,7 @@
             document.getElementById('clientAddress').value = p.address || '';
             document.getElementById('quoteDate').value = p.date || '';
             document.getElementById('surfaceM2').value = p.m2 || 0;
+            document.getElementById('includeIVA').checked = p.includeIVA || false;
             selectedItems = p.items || [];
             showSection('nueva', document.querySelector(`.sidebar .nav-link[onclick*="'nueva'"]`));
             calculateTotal(); renderInventoryList(); updateSummary();
@@ -692,11 +698,48 @@
             doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
             doc.text('Anticipo: 50% para iniciar', 110, 69); doc.text('Saldo: contra entrega', 110, 75);
             doc.text('Forma de pago: transferencia bancaria', 110, 81); doc.text('Débito / Crédito / Efectivo', 110, 87);
-            doc.autoTable({ startY: 95, head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']], body: [['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.total)]], theme: 'plain', headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' }, bodyStyles: { fontSize: 10, cellPadding: 5 }, columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } }, styles: { lineColor: [226, 232, 240], lineWidth: 0.3 } });
+            
+            // Tabla con desglose de IVA si aplica
+            if (calc.includeIVA) {
+                doc.autoTable({
+                    startY: 95,
+                    head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
+                    body: [
+                        ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)],
+                        ['', '', '', ''],
+                        ['', '', 'Subtotal:', '$' + formatMoney(calc.subtotal)],
+                        ['', '', 'IVA (19%):', '$' + formatMoney(calc.iva)],
+                        ['', '', 'TOTAL:', '$' + formatMoney(calc.total)]
+                    ],
+                    theme: 'plain',
+                    headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { fontSize: 10, cellPadding: 5 },
+                    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+                    styles: { lineColor: [226, 232, 240], lineWidth: 0.3 }
+                });
+            } else {
+                doc.autoTable({
+                    startY: 95,
+                    head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
+                    body: [['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)]],
+                    theme: 'plain',
+                    headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
+                    bodyStyles: { fontSize: 10, cellPadding: 5 },
+                    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+                    styles: { lineColor: [226, 232, 240], lineWidth: 0.3 }
+                });
+            }
+            
             const totalY = doc.lastAutoTable.finalY + 5;
             doc.setFillColor(241, 245, 255); doc.rect(110, totalY, 85, 12, 'F');
             doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('TOTAL', 115, totalY + 8);
             doc.text('$' + formatMoney(calc.total), 190, totalY + 8, { align: 'right' });
+            
+            if (calc.includeIVA) {
+                doc.setFontSize(8); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
+                doc.text('Incluye IVA 19%', 115, totalY + 13);
+            }
+            
             let currentY = totalY + 20;
             if(selectedItems.length > 0) {
                 doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
@@ -734,7 +777,11 @@
             const client = document.getElementById('clientName').value || 'Cliente';
             if(!phone) { alert('Ingrese un teléfono'); return; }
             await generatePDF();
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
+            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            if (calc.includeIVA) {
+                msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotal) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n';
+            }
+            msg += '\n';
             if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
             msg += '*ALCANCE DEL PROYECTO:*\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra de polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor con color\n✓ Estampado profesional\n✓ Juntas y dilatación\n✓ Sello acrílico\n✓ Limpieza y entrega\n\n*GARANTÍA:* 231 días\n\n*FORMA DE PAGO:*\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• NO SOLICITAMOS ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality\nVálido 16 días';
             setTimeout(() => { window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'); alert('✅ PDF descargado. Adjúntelo en WhatsApp.'); }, 500);
@@ -747,7 +794,11 @@
             if(!email) { alert('Ingrese un correo'); return; }
             await generatePDF();
             const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
-            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
+            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            if (calc.includeIVA) {
+                body += '💵 Subtotal: $' + formatMoney(calc.subtotal) + '\n🧾 IVA (19%): $' + formatMoney(calc.iva) + '\n';
+            }
+            body += '\n';
             if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
             body += 'ALCANCE:\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor color\n✓ Estampado profesional\n✓ Juntas dilatación\n✓ Sello acrílico\n✓ Limpieza final\n\nGARANTÍA: 231 días\n\nPAGO:\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• SIN ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality';
             setTimeout(() => { window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); alert('✅ PDF descargado. Adjúntelo en el correo.'); }, 500);
