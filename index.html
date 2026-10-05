@@ -633,7 +633,7 @@
             const address = document.getElementById('clientAddress').value || '';
             const date = document.getElementById('quoteDate').value || new Date().toLocaleDateString();
             const quoteNumber = 'COT-' + Date.now().toString().slice(-6);
-            const primaryColor = [79, 70, 229], darkColor = [30, 41, 59], grayColor = [100, 116, 139], successColor = [16, 185, 129];
+            const primaryColor = [79, 70, 229], darkColor = [30, 41, 59], grayColor = [100, 116, 139];
 
             // HEADER
             if(logoBase64) doc.addImage(logoBase64, 'PNG', 15, 12, 25, 25);
@@ -697,7 +697,7 @@
 
             let currentY = doc.lastAutoTable.finalY + 10;
 
-            // ITEMS INCLUIDOS - 2 columnas compactas
+            // ITEMS INCLUIDOS - SOLO NOMBRES (sin cantidades)
             if(selectedItems.length > 0) {
                 doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
                 doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
@@ -707,10 +707,10 @@
                 const midPoint = Math.ceil(selectedItems.length / 2);
                 for (let i = 0; i < midPoint; i++) {
                     const item = selectedItems[i];
-                    doc.text('• ' + item.name + ' (' + item.qty + ' ' + item.unit + ')', 15, currentY);
+                    doc.text('• ' + item.name, 15, currentY);
                     if (selectedItems[midPoint + i]) {
                         const item2 = selectedItems[midPoint + i];
-                        doc.text('• ' + item2.name + ' (' + item2.qty + ' ' + item2.unit + ')', 110, currentY);
+                        doc.text('• ' + item2.name, 110, currentY);
                     }
                     currentY += 4;
                 }
@@ -791,7 +791,7 @@
             const client = document.getElementById('clientName').value || 'Cliente';
             if(!phone) { alert('Ingrese un teléfono'); return; }
             await generatePDF();
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
             if (calc.includeIVA) { msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotal) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n'; }
             msg += '\n';
             if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
@@ -806,7 +806,7 @@
             if(!email) { alert('Ingrese un correo'); return; }
             await generatePDF();
             const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
-            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
             if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotal) + '\n🧾 IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
             body += '\n';
             if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
