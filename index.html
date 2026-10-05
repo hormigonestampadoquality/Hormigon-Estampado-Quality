@@ -455,14 +455,13 @@
 
     <script>
         // ===== FIREBASE CONFIGURATION =====
-        // ⚠️ REEMPLAZA ESTOS VALORES CON TUS CREDENCIALES DE FIREBASE
         const firebaseConfig = {
-            apiKey: "TU_API_KEY_AQUI",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            projectId: "TU_PROYECTO",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "TU_SENDER_ID",
-            appId: "TU_APP_ID"
+            apiKey: "AIzaSyCHYIrU82gOLazsnKR1rEYyBePBlouJqD8",
+            authDomain: "quality-pavimentos.firebaseapp.com",
+            projectId: "quality-pavimentos",
+            storageBucket: "quality-pavimentos.firebasestorage.app",
+            messagingSenderId: "2547968214",
+            appId: "1:2547968214:web:49656e656bce7dfa718177"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -1237,8 +1236,8 @@
             let body = 'Estimado ' + client + ',\n\n';
             body += 'Adjunto cotización detallada.\n\n';
             body += '📐 Superficie: ' + calc.m2 + ' m²\n';
-            body += ' Total: $' + formatMoney(calc.total) + '\n';
-            body += '📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
+            body += '💰 Total: $' + formatMoney(calc.total) + '\n';
+            body += ' Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n\n';
             
             if(selectedItems.length > 0) {
                 body += 'ITEMS INCLUIDOS:\n';
