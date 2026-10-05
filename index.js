@@ -1,37 +1,170 @@
+// HTML completo embebido en el Worker
+const HTML_CONTENT = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Pavimentos - Sistema de Cotizaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"><\/script>
+    <style>
+        :root { --primary: #4f46e5; --primary-dark: #3730a3; --secondary: #f59e0b; --success: #10b981; --danger: #ef4444; --dark: #1e293b; --gray: #64748b; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, rgba(30,41,59,0.85), rgba(79,70,229,0.85)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23334155" width="100" height="100"/></svg>') center/cover; }
+        .login-card { background: rgba(255,255,255,0.98); border-radius: 20px; box-shadow: 0 25px 80px rgba(0,0,0,0.4); padding: 40px; max-width: 450px; width: 100%; }
+        .logo-login { max-width: 160px; margin-bottom: 20px; }
+        .main-container { background: white; min-height: 100vh; }
+        .sidebar { background: linear-gradient(180deg, var(--dark), #0f172a); color: white; min-height: 100vh; padding: 20px; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 18px; border-radius: 10px; margin-bottom: 5px; transition: all 0.3s; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--primary); color: white; transform: translateX(5px); }
+        .content-area { padding: 30px; background: #f8fafc; min-height: 100vh; }
+        .card-custom { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; background: white; }
+        .card-header-custom { background: var(--primary); color: white; border-radius: 15px 15px 0 0; padding: 15px 20px; font-weight: 600; }
+        .btn-primary-custom { background: var(--primary); border: none; border-radius: 10px; padding: 12px 25px; font-weight: 600; color: white; }
+        .total-display { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 25px; border-radius: 15px; text-align: center; }
+        .total-amount { font-size: 2.5rem; font-weight: bold; color: var(--secondary); }
+        .hidden { display: none !important; }
+        @media (max-width: 768px) {
+            .sidebar { min-height: auto; padding: 15px; }
+            .content-area { padding: 15px; }
+            .total-amount { font-size: 1.8rem; }
+            .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        }
+        @media (min-width: 769px) { .inventory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
+        .inventory-item { padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .inventory-item:hover { border-color: var(--primary); background: #f0f0ff; }
+        .inventory-item.selected { border-color: var(--success); background: #ecfdf5; }
+        .project-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        .trash-item-card { background: white; border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; border: 2px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 12px; }
+        .trash-item-card.selected { border-color: var(--success); background: #ecfdf5; }
+        .info-badge { background: #e0e7ff; color: var(--primary); padding: 10px 15px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 15px; }
+        .rate-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--secondary); }
+        .contact-info { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .contact-info a { color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="login-container">
+        <div class="login-card text-center">
+            <img src="logo.png" alt="Quality Pavimentos" class="logo-login">
+            <h3 class="mb-2">Quality Pavimentos</h3>
+            <p class="text-muted mb-4">Sistema de Cotizaciones</p>
+            <div class="mb-3 text-start"><label class="form-label">Usuario</label><input type="text" id="username" class="form-control form-control-lg" value="admin"></div>
+            <div class="mb-4 text-start"><label class="form-label">Contraseña</label><input type="password" id="password" class="form-control form-control-lg" value="1234"></div>
+            <button class="btn btn-primary-custom w-100 btn-lg" onclick="login()"><i class="bi bi-box-arrow-in-right"></i> Ingresar</button>
+        </div>
+    </div>
+    <div id="mainPanel" class="main-container hidden">
+        <div class="row g-0">
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="text-center mb-4">
+                    <img src="logo.png" alt="Logo" class="logo-login rounded-circle bg-white p-2" style="max-width: 90px;">
+                    <h6 class="mt-2 mb-0">Quality Pavimentos</h6>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" onclick="showSection('nueva', this)"><i class="bi bi-plus-circle"></i> Nueva Cotización</a>
+                    <a class="nav-link" href="#" onclick="showSection('proyectos', this)"><i class="bi bi-folder"></i> Proyectos</a>
+                    <a class="nav-link" href="#" onclick="showSection('papelera', this)"><i class="bi bi-trash"></i> Papelera</a>
+                    <a class="nav-link" href="#" onclick="showSection('tarifas', this)"><i class="bi bi-tag"></i> Tarifas</a>
+                    <a class="nav-link" href="#" onclick="showSection('inventario', this)"><i class="bi bi-box-seam"></i> Inventario</a>
+                    <a class="nav-link mt-4 text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Salir</a>
+                </nav>
+                <div class="contact-info mt-4 d-none d-md-block">
+                    <small class="d-block mb-2"><i class="bi bi-whatsapp"></i> <a href="https://wa.me/56928213391" target="_blank">+56 9 2821 3391</a></small>
+                    <small class="d-block"><i class="bi bi-instagram"></i> <a href="https://instagram.com/hormigon_estampado.quality" target="_blank">@hormigon_estampado.quality</a></small>
+                </div>
+            </div>
+            <div class="col-md-9 col-lg-10 content-area">
+                <div id="sec-nueva">
+                    <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Nueva Cotización</h2>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card card-custom"><div class="card-header-custom"><i class="bi bi-person"></i> Datos del Cliente</div><div class="card-body"><div class="row"><div class="col-md-6 mb-3"><label class="form-label">Nombre Cliente *</label><input type="text" id="clientName" class="form-control" placeholder="Juan Pérez"></div><div class="col-md-6 mb-3"><label class="form-label">Teléfono *</label><input type="text" id="clientPhone" class="form-control" placeholder="56912345678"></div><div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" id="clientEmail" class="form-control" placeholder="cliente@email.com"></div><div class="col-md-6 mb-3"><label class="form-label">Dirección</label><input type="text" id="clientAddress" class="form-control" placeholder="Dirección del proyecto"></div><div class="col-md-6 mb-3"><label class="form-label">Fecha</label><input type="date" id="quoteDate" class="form-control"></div></div></div></div>
+                            <div class="card card-custom"><div class="card-header-custom"><i class="bi bi-rulers"></i> Cálculo por Metro Cuadrado</div><div class="card-body"><div class="row align-items-center"><div class="col-md-6"><label class="form-label">Superficie (m²) *</label><input type="number" id="surfaceM2" class="form-control form-control-lg" placeholder="Ej: 34" onchange="calculateTotal()"></div><div class="col-md-6"><div class="alert alert-info mb-0" id="ratesInfo"><small><strong>Tarifas:</strong><br>Cargando...</small></div></div></div><div class="mt-3 p-3 bg-light rounded"><div class="row"><div class="col-md-4"><small class="text-muted">Precio m²</small><div class="fw-bold" id="pricePerM2">$0</div></div><div class="col-md-4"><small class="text-muted">Superficie</small><div class="fw-bold" id="displayM2">0 m²</div></div><div class="col-md-4"><small class="text-muted">TOTAL</small><div class="fw-bold text-success" id="subtotalM2">$0</div></div></div></div></div></div>
+                            <div class="card card-custom"><div class="card-header-custom d-flex justify-content-between align-items-center"><span><i class="bi bi-list-check"></i> Items Incluidos en el Precio</span><button class="btn btn-sm btn-light" onclick="toggleAllItems()"><i class="bi bi-check-all"></i> <span id="toggleBtnText">Deseleccionar Todo</span></button></div><div class="card-body"><div class="info-badge"><i class="bi bi-info-circle"></i> Estos items ya están contemplados en el valor por m².</div><div id="inventoryList" class="inventory-grid"><p class="text-muted">Cargando items...</p></div></div></div>
+                        </div>
+                        <div class="col-md-4"><div class="card card-custom sticky-top" style="top: 20px;"><div class="card-header-custom text-center"><i class="bi bi-receipt"></i> RESUMEN</div><div class="card-body"><div class="summary-grid"><div class="mb-3"><small class="text-muted">Cliente</small><div class="fw-bold" id="summaryClient">-</div></div><div class="mb-3"><small class="text-muted">Superficie</small><div class="fw-bold" id="summarySurface">0 m²</div></div></div><div class="mb-3"><small class="text-muted">Items Incluidos</small><div id="summaryItems" class="small">Ninguno</div></div><div class="total-display mt-4"><small>TOTAL A COBRAR</small><div class="total-amount" id="totalAmount">$0</div></div><div class="mt-4"><button class="btn btn-success w-100 mb-2" onclick="generatePDF()"><i class="bi bi-file-pdf"></i> Generar PDF</button><button class="btn btn-primary w-100 mb-2" onclick="sendWhatsApp()"><i class="bi bi-whatsapp"></i> WhatsApp</button><button class="btn btn-info w-100 mb-2 text-white" onclick="sendEmail()"><i class="bi bi-envelope"></i> Enviar Correo</button><button class="btn btn-secondary w-100" onclick="saveQuote()"><i class="bi bi-save"></i> Guardar Proyecto</button></div></div></div></div>
+                    </div>
+                </div>
+                <div id="sec-proyectos" class="hidden"><h2 class="mb-4"><i class="bi bi-folder"></i> Proyectos Guardados</h2><div id="projectsList"></div></div>
+                <div id="sec-papelera" class="hidden"><h2 class="mb-4"><i class="bi bi-trash"></i> Papelera de Reciclaje</h2><div class="card card-custom mb-3"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2"><div><button class="btn btn-sm btn-primary me-2" onclick="selectAllTrash()"><i class="bi bi-check-all"></i> Seleccionar Todo</button><button class="btn btn-sm btn-secondary" onclick="deselectAllTrash()"><i class="bi bi-x-circle"></i> Deseleccionar</button></div><div><button class="btn btn-sm btn-success me-2" onclick="restoreSelected()"><i class="bi bi-arrow-counterclockwise"></i> Restaurar</button><button class="btn btn-sm btn-danger" onclick="deleteSelected()"><i class="bi bi-trash"></i> Eliminar</button></div></div></div><div id="trashList"></div></div>
+                <div id="sec-tarifas" class="hidden"><h2 class="mb-4"><i class="bi bi-tag"></i> Gestión de Tarifas</h2><div class="info-badge mb-4"><i class="bi bi-info-circle"></i> Modifica las tarifas por metro cuadrado.</div><div id="ratesList"></div><button class="btn btn-primary-custom mt-3" onclick="saveRates()"><i class="bi bi-save"></i> Guardar Tarifas</button></div>
+                <div id="sec-inventario" class="hidden"><h2 class="mb-4"><i class="bi bi-box-seam"></i> Gestión de Inventario</h2><div class="card card-custom"><div class="card-body"><table class="table table-hover"><thead class="table-dark"><tr><th>Item</th><th>Cantidad</th><th>Unidad</th><th>Precio Unit.</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="inventoryTable"></tbody></table><button class="btn btn-primary-custom" onclick="addInventoryItem()"><i class="bi bi-plus"></i> Agregar Item</button></div></div></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
+        function loadLogo() { return new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'Anonymous'; img.onload = function() { const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; canvas.getContext('2d').drawImage(img, 0, 0); logoBase64 = canvas.toDataURL('image/png'); resolve(logoBase64); }; img.onerror = reject; img.src = 'logo.png'; }); }
+        async function apiGet(endpoint) { const res = await fetch(endpoint); return await res.json(); }
+        async function apiPost(endpoint, data) { const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); return await res.json(); }
+        async function apiPut(endpoint, data) { const res = await fetch(endpoint, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); return await res.json(); }
+        async function apiDelete(endpoint) { const res = await fetch(endpoint, { method: 'DELETE' }); return await res.json(); }
+        function login() { if(document.getElementById('username').value === 'admin' && document.getElementById('password').value === '1234') { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainPanel').classList.remove('hidden'); initApp(); } else { alert('Credenciales incorrectas'); } }
+        function logout() { document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('mainPanel').classList.add('hidden'); }
+        function showSection(section, element) { ['nueva','proyectos','papelera','tarifas','inventario'].forEach(s => document.getElementById('sec-'+s).classList.add('hidden')); document.getElementById('sec-'+section).classList.remove('hidden'); document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active')); if(element) element.classList.add('active'); if(section==='proyectos') renderProjects(); if(section==='papelera') renderTrash(); if(section==='tarifas') renderRates(); if(section==='inventario') renderInventory(); }
+        function calculateTotal() { const m2 = parseFloat(document.getElementById('surfaceM2').value) || 0; let pricePerM2 = 0; for(const rate of rates) { if(m2 <= rate.maxM2) { pricePerM2 = rate.price; break; } } const total = m2 * pricePerM2; document.getElementById('pricePerM2').textContent = '$'+formatMoney(pricePerM2); document.getElementById('displayM2').textContent = m2+' m²'; document.getElementById('subtotalM2').textContent = '$'+formatMoney(total); document.getElementById('summarySurface').textContent = m2+' m²'; document.getElementById('totalAmount').textContent = '$'+formatMoney(total); return { m2, pricePerM2, total }; }
+        function renderInventoryList() { const container = document.getElementById('inventoryList'); if(inventory.length===0) { container.innerHTML='<p class="text-muted">No hay items</p>'; return; } container.innerHTML = inventory.map(item => { const isSelected = selectedItems.find(i=>i.id===item.id); return '<div class="inventory-item '+(isSelected?'selected':'')+'" onclick="toggleItem('+item.id+')"><div class="d-flex justify-content-between align-items-center"><div><strong>'+item.name+'</strong><br><small class="text-muted">'+item.qty+' '+item.unit+'</small></div><i class="bi '+(isSelected?'bi-check-circle-fill text-success':'bi-circle')+' fs-4"></i></div></div>'; }).join(''); updateToggleButtonText(); }
+        function toggleItem(id) { const item = inventory.find(i=>i.id===id); const index = selectedItems.findIndex(i=>i.id===id); if(index>-1) selectedItems.splice(index,1); else selectedItems.push(item); renderInventoryList(); updateSummary(); }
+        function toggleAllItems() { if(selectedItems.length===inventory.length) selectedItems=[]; else selectedItems=[...inventory]; renderInventoryList(); updateSummary(); }
+        function updateToggleButtonText() { document.getElementById('toggleBtnText').textContent = selectedItems.length===inventory.length?'Deseleccionar Todo':'Seleccionar Todo'; }
+        function updateSummary() { document.getElementById('summaryClient').textContent = document.getElementById('clientName').value||'-'; document.getElementById('summaryItems').innerHTML = selectedItems.length===0?'<span class="text-muted">Ninguno</span>':selectedItems.map(item=>'<div class="small mb-1"><i class="bi bi-check text-success"></i> '+item.name+'</div>').join(''); updateToggleButtonText(); }
+        function renderInventory() { document.getElementById('inventoryTable').innerHTML = inventory.map(item => '<tr><td><input type="text" class="form-control form-control-sm" value="'+item.name+'" onchange="updateInventory('+item.id+',\'name\',this.value)"></td><td><input type="number" class="form-control form-control-sm" value="'+item.qty+'" onchange="updateInventory('+item.id+',\'qty\',this.value)"></td><td><input type="text" class="form-control form-control-sm" value="'+item.unit+'" onchange="updateInventory('+item.id+',\'unit\',this.value)"></td><td><input type="number" class="form-control form-control-sm" value="'+item.price+'" onchange="updateInventory('+item.id+',\'price\',this.value)"></td><td class="fw-bold">$'+formatMoney(item.qty*item.price)+'</td><td><button class="btn btn-sm btn-danger" onclick="deleteInventory('+item.id+')"><i class="bi bi-trash"></i></button></td></tr>').join(''); }
+        async function updateInventory(id, field, value) { const item = inventory.find(i=>i.id===id); if(field==='qty'||field==='price') value=parseFloat(value)||0; item[field]=value; await apiPut('/api/inventory', inventory); renderInventory(); }
+        async function deleteInventory(id) { if(confirm('¿Eliminar?')) { inventory=inventory.filter(i=>i.id!==id); await apiPut('/api/inventory', inventory); renderInventory(); } }
+        async function addInventoryItem() { const name=prompt('Nombre:'); if(!name) return; const qty=parseFloat(prompt('Cantidad:','1'))||1; const unit=prompt('Unidad:','unid')||'unid'; const price=parseFloat(prompt('Precio:','0'))||0; inventory.push({id:Date.now(),name,qty,unit,price}); await apiPut('/api/inventory', inventory); renderInventory(); }
+        async function saveQuote() { const calc=calculateTotal(); if(calc.m2===0) { alert('Ingrese m²'); return; } const project={id:Date.now(),date:document.getElementById('quoteDate').value||new Date().toISOString().split('T')[0],client:document.getElementById('clientName').value||'Sin nombre',phone:document.getElementById('clientPhone').value,email:document.getElementById('clientEmail').value,address:document.getElementById('clientAddress').value,m2:calc.m2,pricePerM2:calc.pricePerM2,total:calc.total,items:[...selectedItems],status:'active'}; await apiPost('/api/projects', project); alert('Proyecto guardado'); }
+        async function renderProjects() { projects=await apiGet('/api/projects'); const container=document.getElementById('projectsList'); if(projects.length===0) { container.innerHTML='<div class="alert alert-info">No hay proyectos</div>'; return; } container.innerHTML=projects.map(p=>'<div class="project-card"><div class="row align-items-center"><div class="col-md-5"><h5 class="mb-1">'+p.client+'</h5><small class="text-muted"><i class="bi bi-calendar"></i> '+p.date+' • '+p.m2+' m²</small>'+(p.address?'<br><small class="text-muted"><i class="bi bi-geo-alt"></i> '+p.address+'</small>':'')+'</div><div class="col-md-3"><div class="fw-bold text-success fs-5">$'+formatMoney(p.total)+'</div><small class="text-muted">$'+formatMoney(p.pricePerM2)+'/m²</small></div><div class="col-md-4 text-end"><button class="btn btn-sm btn-primary mb-1" onclick="loadProject('+p.id+')"><i class="bi bi-eye"></i> Ver</button><button class="btn btn-sm btn-success mb-1" onclick="resendProject('+p.id+')"><i class="bi bi-send"></i> Reenviar</button><button class="btn btn-sm btn-danger" onclick="deleteProject('+p.id+')"><i class="bi bi-trash"></i></button></div></div></div>').join(''); }
+        async function loadProject(id) { projects=await apiGet('/api/projects'); const project=projects.find(p=>p.id===id); if(!project) return; document.getElementById('clientName').value=project.client; document.getElementById('clientPhone').value=project.phone; document.getElementById('clientEmail').value=project.email; document.getElementById('clientAddress').value=project.address||''; document.getElementById('quoteDate').value=project.date; document.getElementById('surfaceM2').value=project.m2; selectedItems=[...project.items]; showSection('nueva', document.querySelector('.sidebar .nav-link')); calculateTotal(); renderInventoryList(); updateSummary(); }
+        async function resendProject(id) { await loadProject(id); setTimeout(()=>{ if(confirm('¿Enviar por WhatsApp?')) sendWhatsApp(); else if(confirm('¿Enviar por correo?')) sendEmail(); }, 500); }
+        async function deleteProject(id) { if(!confirm('¿Mover a papelera?')) return; await apiDelete('/api/projects/'+id); renderProjects(); }
+        async function renderTrash() { trash=await apiGet('/api/trash'); const container=document.getElementById('trashList'); if(trash.length===0) { container.innerHTML='<div class="alert alert-info">Papelera vacía</div>'; return; } container.innerHTML=trash.map(p=>'<div class="trash-item-card" onclick="toggleTrashItem('+p.id+')" id="trash-'+p.id+'"><input type="checkbox" id="check-'+p.id+'" onclick="event.stopPropagation();toggleTrashItem('+p.id+')"><div class="flex-grow-1"><h6 class="mb-1">'+p.client+'</h6><small class="text-muted">Eliminado: '+new Date(p.deletedAt).toLocaleString()+' • $'+formatMoney(p.total)+'</small></div></div>').join(''); }
+        function toggleTrashItem(id) { const card=document.getElementById('trash-'+id); const checkbox=document.getElementById('check-'+id); checkbox.checked=!checkbox.checked; card.classList.toggle('selected', checkbox.checked); }
+        function selectAllTrash() { trash.forEach(p=>{ const card=document.getElementById('trash-'+p.id); const checkbox=document.getElementById('check-'+p.id); if(card&&checkbox) { checkbox.checked=true; card.classList.add('selected'); } }); }
+        function deselectAllTrash() { trash.forEach(p=>{ const card=document.getElementById('trash-'+p.id); const checkbox=document.getElementById('check-'+p.id); if(card&&checkbox) { checkbox.checked=false; card.classList.remove('selected'); } }); }
+        function getSelectedTrashIds() { return trash.filter(p=>{ const checkbox=document.getElementById('check-'+p.id); return checkbox&&checkbox.checked; }).map(p=>p.id); }
+        async function restoreSelected() { const ids=getSelectedTrashIds(); if(ids.length===0) { alert('Seleccione al menos uno'); return; } if(!confirm('¿Restaurar '+ids.length+' proyecto(s)?')) return; await apiPost('/api/trash/restore', {ids}); renderTrash(); alert('Restaurados'); }
+        async function deleteSelected() { const ids=getSelectedTrashIds(); if(ids.length===0) { alert('Seleccione al menos uno'); return; } if(!confirm('¿Eliminar '+ids.length+' permanentemente?')) return; await apiPost('/api/trash/delete', {ids}); renderTrash(); }
+        async function renderRates() { rates=await apiGet('/api/rates'); document.getElementById('ratesList').innerHTML=rates.map((rate,index)=>'<div class="rate-card"><div class="row align-items-center"><div class="col-md-6"><h6 class="mb-1">Hasta '+(rate.maxM2===9999?'más de 100':rate.maxM2)+' m²</h6><small class="text-muted">Rango de superficie</small></div><div class="col-md-4"><label class="form-label small">Precio por m²</label><input type="number" class="form-control" value="'+rate.price+'" id="rate-'+index+'" onchange="updateRate('+index+',this.value)"></div><div class="col-md-2"><div class="fw-bold text-success mt-4">$'+formatMoney(rate.price)+'/m²</div></div></div></div>').join(''); }
+        function updateRate(index, value) { rates[index].price=parseFloat(value)||0; }
+        async function saveRates() { await apiPut('/api/rates', rates); alert('Tarifas guardadas'); updateRatesInfo(); }
+        function updateRatesInfo() { const info=document.getElementById('ratesInfo'); let html='<strong>Tarifas:</strong><br>'; rates.forEach((rate,index)=>{ const prevMax=index>0?rates[index-1].maxM2:0; const label=rate.maxM2===9999?'+'+prevMax+'m²':prevMax+'-'+rate.maxM2+'m²'; html+='• '+label+': $'+formatMoney(rate.price)+'/m²<br>'; }); info.innerHTML='<small>'+html+'</small>'; }
+        async function generatePDF() { const calc=calculateTotal(); if(calc.m2===0) { alert('Ingrese m²'); return; } if(!logoBase64) { try { await loadLogo(); } catch(e) {} } const {jsPDF}=window.jspdf; const doc=new jsPDF(); const client=document.getElementById('clientName').value||'Cliente'; const date=document.getElementById('quoteDate').value||new Date().toLocaleDateString(); const quoteNumber='COT-'+Date.now().toString().slice(-6); const primaryColor=[79,70,229], darkColor=[30,41,59], grayColor=[100,116,139]; if(logoBase64) doc.addImage(logoBase64,'PNG',15,15,30,30); doc.setFontSize(18); doc.setTextColor(...darkColor); doc.setFont(undefined,'bold'); doc.text('QUALITY PAVIMENTOS',50,22); doc.setFontSize(9); doc.setTextColor(...grayColor); doc.setFont(undefined,'normal'); doc.text('Construcción y Remodelaciones Quality SpA',50,28); doc.text('RUT: 78.339.203-8',50,33); doc.text('WhatsApp: +56 9 2821 3391',50,38); doc.text('Instagram: @hormigon_estampado.quality',50,43); doc.setFontSize(28); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('COTIZACIÓN',195,25,{align:'right'}); doc.setFontSize(10); doc.setTextColor(...grayColor); doc.setFont(undefined,'normal'); doc.text('N° '+quoteNumber,195,33,{align:'right'}); doc.text('Fecha: '+date,195,39,{align:'right'}); doc.text('Vigencia: 16 días',195,45,{align:'right'}); doc.setDrawColor(...primaryColor); doc.setLineWidth(0.5); doc.line(15,52,195,52); doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('COTIZADO PARA',15,62); doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined,'normal'); doc.text(client,15,69); const email=document.getElementById('clientEmail').value; const phone=document.getElementById('clientPhone').value; const address=document.getElementById('clientAddress').value; if(email) doc.text(email,15,75); if(phone) doc.text('Tel: '+phone,15,81); if(address) doc.text(address,15,87); doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('CONDICIONES DE PAGO',110,62); doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined,'normal'); doc.text('Anticipo: 50% para iniciar',110,69); doc.text('Saldo: contra entrega',110,75); doc.text('Forma de pago: transferencia bancaria',110,81); doc.text('Débito / Crédito / Efectivo',110,87); doc.autoTable({startY:95,head:[['DESCRIPCIÓN','CANT.','PRECIO UNIT.','IMPORTE']],body:[['Hormigón Estampado',calc.m2+' m²','$'+formatMoney(calc.pricePerM2)+'/m²','$'+formatMoney(calc.total)]],theme:'plain',headStyles:{fillColor:primaryColor,textColor:255,fontStyle:'bold',halign:'center'},bodyStyles:{fontSize:10,cellPadding:5},columnStyles:{0:{halign:'left'},1:{halign:'center'},2:{halign:'right'},3:{halign:'right'}},styles:{lineColor:[226,232,240],lineWidth:0.3}}); const totalY=doc.lastAutoTable.finalY+5; doc.setFillColor(241,245,255); doc.rect(110,totalY,85,12,'F'); doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('TOTAL',115,totalY+8); doc.text('$'+formatMoney(calc.total),190,totalY+8,{align:'right'}); let currentY=totalY+20; if(selectedItems.length>0) { doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('ITEMS INCLUIDOS EN EL PRECIO',15,currentY); doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined,'normal'); currentY+=7; selectedItems.forEach(item=>{ doc.text('• '+item.name+' ('+item.qty+' '+item.unit+')',15,currentY); currentY+=5; }); currentY+=8; } doc.setFontSize(13); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('ALCANCE DEL PROYECTO',15,currentY); doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined,'normal'); const alcance=['• Preparación, nivelación y compactación del terreno','• Instalación de malla ACMA C92','• Hormigón premezclado HN25, espesor 10 cm','• Incorporación de fibra de polipropileno','• Barrera antihumedad de polietileno','• Endurecedor con color a elección','• Estampado con moldes profesionales','• Diseño y color a elección del cliente','• Juntas y cortes de dilatación','• Sello acrílico protector de alto rendimiento','• Limpieza y entrega final del proyecto']; currentY+=8; alcance.forEach(line=>{ doc.text(line,15,currentY); currentY+=6; }); currentY+=5; doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('GARANTÍA',15,currentY); doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined,'normal'); currentY+=7; doc.text('231 días corridos sobre instalación, materiales y terminaciones',15,currentY); currentY+=5; doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al',15,currentY); currentY+=5; doc.text('proceso constructivo.',15,currentY); currentY+=10; doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined,'bold'); doc.text('NOTAS Y TÉRMINOS',15,currentY); doc.setFontSize(9); doc.setTextColor(...grayColor); doc.setFont(undefined,'normal'); currentY+=7; doc.text('Esta cotización tiene una vigencia de 16 días naturales.',15,currentY); currentY+=5; doc.text('Los precios incluyen únicamente los conceptos descritos.',15,currentY); currentY+=5; doc.text('Cualquier trabajo adicional se cotizará por separado.',15,currentY); currentY+=15; doc.setDrawColor(...grayColor); doc.setLineWidth(0.3); doc.line(15,currentY,80,currentY); doc.setFontSize(9); doc.setTextColor(...darkColor); doc.text('Nombre y firma de aceptación',15,currentY+5); doc.setFillColor(...primaryColor); doc.rect(0,270,210,27,'F'); doc.setFontSize(11); doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.text('Construcción y Remodelaciones Quality SpA',105,278,{align:'center'}); doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text('RUT: 78.339.203-8 | Presupuesto válido por 16 días',105,285,{align:'center'}); doc.setFontSize(9); doc.text('WhatsApp: +56 9 2821 3391 | Instagram: @hormigon_estampado.quality',105,292,{align:'center'}); doc.save('Cotizacion_'+client.replace(/\s+/g,'_')+'_'+quoteNumber+'.pdf'); return doc; }
+        async function sendWhatsApp() { const calc=calculateTotal(); if(calc.m2===0) { alert('Ingrese m²'); return; } const phone=document.getElementById('clientPhone').value.replace(/\D/g,''); const client=document.getElementById('clientName').value||'Cliente'; if(!phone) { alert('Ingrese teléfono'); return; } await generatePDF(); let msg='*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\\n\\nEstimado '+client+',\\n\\nAdjunto encontrará la cotización detallada.\\n\\n📐 *Superficie:* '+calc.m2+' m²\\n💰 *Valor total:* $'+formatMoney(calc.total)+'\\n📋 *Precio:* $'+formatMoney(calc.pricePerM2)+'/m²\\n\\n'; if(selectedItems.length>0) { msg+='*ITEMS INCLUIDOS:*\\n'; selectedItems.forEach(item=>{ msg+='✓ '+item.name+'\\n'; }); msg+='\\n'; } msg+='*ALCANCE DEL PROYECTO:*\\n✓ Preparación y compactación\\n✓ Malla ACMA C92\\n✓ Hormigón HN25, 10 cm\\n✓ Fibra de polipropileno\\n✓ Barrera antihumedad\\n✓ Endurecedor con color\\n✓ Estampado profesional\\n✓ Juntas y dilatación\\n✓ Sello acrílico\\n✓ Limpieza y entrega\\n\\n*GARANTÍA:* 231 días\\n\\n*FORMA DE PAGO:*\\n• 50% inicio - 50% entrega\\n• Transferencia/Débito/Crédito/Efectivo\\n• NO SOLICITAMOS ANTICIPO\\n\\nQuality SpA\\nRUT: 78.339.203-8\\nWhatsApp: +56 9 2821 3391\\nInstagram: @hormigon_estampado.quality\\nVálido 16 días'; setTimeout(()=>{ window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank'); alert('✅ PDF descargado. Adjúntelo en WhatsApp.'); }, 500); }
+        async function sendEmail() { const calc=calculateTotal(); if(calc.m2===0) { alert('Ingrese m²'); return; } const email=document.getElementById('clientEmail').value; const client=document.getElementById('clientName').value||'Cliente'; if(!email) { alert('Ingrese correo'); return; } await generatePDF(); const subject='COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | '+client; let body='Estimado '+client+',\\n\\nAdjunto cotización detallada.\\n\\n Superficie: '+calc.m2+' m²\\n💰 Total: $'+formatMoney(calc.total)+'\\n📋 Precio: $'+formatMoney(calc.pricePerM2)+'/m²\\n\\n'; if(selectedItems.length>0) { body+='ITEMS INCLUIDOS:\\n'; selectedItems.forEach(item=>{ body+='✓ '+item.name+'\\n'; }); body+='\\n'; } body+='ALCANCE:\\n✓ Preparación y compactación\\n✓ Malla ACMA C92\\n✓ Hormigón HN25, 10 cm\\n✓ Fibra polipropileno\\n✓ Barrera antihumedad\\n✓ Endurecedor color\\n✓ Estampado profesional\\n✓ Juntas dilatación\\n✓ Sello acrílico\\n✓ Limpieza final\\n\\nGARANTÍA: 231 días\\n\\nPAGO:\\n• 50% inicio - 50% entrega\\n• Transferencia/Débito/Crédito/Efectivo\\n• SIN ANTICIPO\\n\\nQuality SpA\\nRUT: 78.339.203-8\\nWhatsApp: +56 9 2821 3391\\nInstagram: @hormigon_estampado.quality'; setTimeout(()=>{ window.location.href='mailto:'+email+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body); alert('✅ PDF descargado. Adjúntelo en el correo.'); }, 500); }
+        function formatMoney(amount) { return new Intl.NumberFormat('es-CL',{minimumFractionDigits:0}).format(amount); }
+        async function initApp() { document.getElementById('quoteDate').valueAsDate=new Date(); try { await loadLogo(); } catch(e) {} try { inventory=await apiGet('/api/inventory'); rates=await apiGet('/api/rates'); updateRatesInfo(); } catch(e) { inventory=[{id:1,name:"Mallas Acma C92",qty:3,unit:"unid",price:23900},{id:2,name:"Estabilizado",qty:1,unit:"cubo",price:40000},{id:3,name:"Retiro de Escombro",qty:1,unit:"servicio",price:120000},{id:4,name:"Plástico Polipropileno",qty:1,unit:"rollo",price:37000},{id:5,name:"Colores",qty:5,unit:"unid",price:13900},{id:6,name:"Desmoldante",qty:1,unit:"unid",price:25000},{id:7,name:"Moldes",qty:4,unit:"unid",price:5000},{id:8,name:"Personal",qty:1,unit:"servicio",price:320000},{id:9,name:"Sello Acrílico",qty:1,unit:"balde",price:86000},{id:10,name:"Brochas",qty:1,unit:"set",price:6000},{id:11,name:"Rodillos",qty:1,unit:"set",price:7000},{id:12,name:"Madera",qty:1,unit:"global",price:10000},{id:13,name:"Tornillos",qty:1,unit:"caja",price:8000},{id:14,name:"Gasolina",qty:1,unit:"global",price:50000},{id:15,name:"TAG",qty:1,unit:"mensual",price:20000},{id:16,name:"Mano de Obra",qty:1,unit:"servicio",price:400000}]; rates=[{maxM2:60,price:34000},{maxM2:90,price:33500},{maxM2:100,price:32000},{maxM2:9999,price:32000}]; updateRatesInfo(); } selectedItems=[...inventory]; renderInventoryList(); calculateTotal(); updateSummary(); }
+    <\/script>
+</body>
+</html>`;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // Servir el HTML principal
+    // Servir HTML principal
     if (path === '/' || path === '/index.html') {
-      const html = await env.__STATIC_CONTENT.get('index.html');
-      if (html) {
-        return new Response(html, {
-          headers: { 'Content-Type': 'text/html' }
-        });
-      }
-      // Fallback: leer desde el repositorio
-      return new Response('HTML not found', { status: 404 });
+      return new Response(HTML_CONTENT, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
     }
 
-    // Servir archivos estáticos (logo, imágenes)
-    if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-      const asset = await env.__STATIC_CONTENT.get(path.substring(1));
-      if (asset) {
-        const contentType = path.endsWith('.png') ? 'image/png' : 'image/jpeg';
-        return new Response(asset, {
-          headers: { 'Content-Type': contentType }
-        });
-      }
+    // Servir logo.png
+    if (path === '/logo.png') {
+      return new Response('Logo not available in Worker mode. Use base64 in code.', {
+        headers: { 'Content-Type': 'text/plain' },
+        status: 404
+      });
     }
 
     // API: Proyectos
     if (path === '/api/projects' && request.method === 'GET') {
       const projects = await env.DB.get('projects');
-      return new Response(projects || '[]', {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(projects || '[]', { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path === '/api/projects' && request.method === 'POST') {
@@ -39,9 +172,7 @@ export default {
       const projects = JSON.parse(await env.DB.get('projects') || '[]');
       projects.push(body);
       await env.DB.put('projects', JSON.stringify(projects));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path.startsWith('/api/projects/') && request.method === 'DELETE') {
@@ -53,118 +184,65 @@ export default {
         trash.push({ ...project, deletedAt: new Date().toISOString() });
         await env.DB.put('trash', JSON.stringify(trash));
       }
-      const filtered = projects.filter(p => p.id !== id);
-      await env.DB.put('projects', JSON.stringify(filtered));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await env.DB.put('projects', JSON.stringify(projects.filter(p => p.id !== id)));
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     // API: Trash
     if (path === '/api/trash' && request.method === 'GET') {
-      const trash = await env.DB.get('trash');
-      return new Response(trash || '[]', {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(await env.DB.get('trash') || '[]', { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path === '/api/trash/restore' && request.method === 'POST') {
       const body = await request.json();
       const trash = JSON.parse(await env.DB.get('trash') || '[]');
       const projects = JSON.parse(await env.DB.get('projects') || '[]');
-      
       body.ids.forEach(id => {
         const item = trash.find(t => t.id === id);
-        if (item) {
-          projects.push({ ...item, status: 'active' });
-        }
+        if (item) projects.push({ ...item, status: 'active' });
       });
-      
-      const filteredTrash = trash.filter(t => !body.ids.includes(t.id));
       await env.DB.put('projects', JSON.stringify(projects));
-      await env.DB.put('trash', JSON.stringify(filteredTrash));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await env.DB.put('trash', JSON.stringify(trash.filter(t => !body.ids.includes(t.id))));
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path === '/api/trash/delete' && request.method === 'POST') {
       const body = await request.json();
       const trash = JSON.parse(await env.DB.get('trash') || '[]');
-      const filtered = trash.filter(t => !body.ids.includes(t.id));
-      await env.DB.put('trash', JSON.stringify(filtered));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await env.DB.put('trash', JSON.stringify(trash.filter(t => !body.ids.includes(t.id))));
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     // API: Inventario
     if (path === '/api/inventory' && request.method === 'GET') {
-      const inventory = await env.DB.get('inventory');
-      if (!inventory) {
-        // Default inventory
-        const defaultInventory = [
-          { id: 1, name: "Mallas Acma C92", qty: 3, unit: "unid", price: 23900 },
-          { id: 2, name: "Estabilizado", qty: 1, unit: "cubo", price: 40000 },
-          { id: 3, name: "Retiro de Escombro", qty: 1, unit: "servicio", price: 120000 },
-          { id: 4, name: "Plástico Polipropileno", qty: 1, unit: "rollo", price: 37000 },
-          { id: 5, name: "Colores", qty: 5, unit: "unid", price: 13900 },
-          { id: 6, name: "Desmoldante", qty: 1, unit: "unid", price: 25000 },
-          { id: 7, name: "Moldes", qty: 4, unit: "unid", price: 5000 },
-          { id: 8, name: "Personal", qty: 1, unit: "servicio", price: 320000 },
-          { id: 9, name: "Sello Acrílico", qty: 1, unit: "balde", price: 86000 },
-          { id: 10, name: "Brochas", qty: 1, unit: "set", price: 6000 },
-          { id: 11, name: "Rodillos", qty: 1, unit: "set", price: 7000 },
-          { id: 12, name: "Madera", qty: 1, unit: "global", price: 10000 },
-          { id: 13, name: "Tornillos", qty: 1, unit: "caja", price: 8000 },
-          { id: 14, name: "Gasolina", qty: 1, unit: "global", price: 50000 },
-          { id: 15, name: "TAG", qty: 1, unit: "mensual", price: 20000 },
-          { id: 16, name: "Mano de Obra", qty: 1, unit: "servicio", price: 400000 }
-        ];
-        await env.DB.put('inventory', JSON.stringify(defaultInventory));
-        return new Response(JSON.stringify(defaultInventory), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+      const inv = await env.DB.get('inventory');
+      if (!inv) {
+        const defaultInv = [{id:1,name:"Mallas Acma C92",qty:3,unit:"unid",price:23900},{id:2,name:"Estabilizado",qty:1,unit:"cubo",price:40000},{id:3,name:"Retiro de Escombro",qty:1,unit:"servicio",price:120000},{id:4,name:"Plástico Polipropileno",qty:1,unit:"rollo",price:37000},{id:5,name:"Colores",qty:5,unit:"unid",price:13900},{id:6,name:"Desmoldante",qty:1,unit:"unid",price:25000},{id:7,name:"Moldes",qty:4,unit:"unid",price:5000},{id:8,name:"Personal",qty:1,unit:"servicio",price:320000},{id:9,name:"Sello Acrílico",qty:1,unit:"balde",price:86000},{id:10,name:"Brochas",qty:1,unit:"set",price:6000},{id:11,name:"Rodillos",qty:1,unit:"set",price:7000},{id:12,name:"Madera",qty:1,unit:"global",price:10000},{id:13,name:"Tornillos",qty:1,unit:"caja",price:8000},{id:14,name:"Gasolina",qty:1,unit:"global",price:50000},{id:15,name:"TAG",qty:1,unit:"mensual",price:20000},{id:16,name:"Mano de Obra",qty:1,unit:"servicio",price:400000}];
+        await env.DB.put('inventory', JSON.stringify(defaultInv));
+        return new Response(JSON.stringify(defaultInv), { headers: { 'Content-Type': 'application/json' } });
       }
-      return new Response(inventory, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(inv, { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path === '/api/inventory' && request.method === 'PUT') {
-      const body = await request.json();
-      await env.DB.put('inventory', JSON.stringify(body));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await env.DB.put('inventory', JSON.stringify(await request.json()));
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     // API: Tarifas
     if (path === '/api/rates' && request.method === 'GET') {
-      const rates = await env.DB.get('rates');
-      if (!rates) {
-        const defaultRates = [
-          { maxM2: 60, price: 34000 },
-          { maxM2: 90, price: 33500 },
-          { maxM2: 100, price: 32000 },
-          { maxM2: 9999, price: 32000 }
-        ];
+      const r = await env.DB.get('rates');
+      if (!r) {
+        const defaultRates = [{maxM2:60,price:34000},{maxM2:90,price:33500},{maxM2:100,price:32000},{maxM2:9999,price:32000}];
         await env.DB.put('rates', JSON.stringify(defaultRates));
-        return new Response(JSON.stringify(defaultRates), {
-          headers: { 'Content-Type': 'application/json' }
-        });
+        return new Response(JSON.stringify(defaultRates), { headers: { 'Content-Type': 'application/json' } });
       }
-      return new Response(rates, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return new Response(r, { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (path === '/api/rates' && request.method === 'PUT') {
-      const body = await request.json();
-      await env.DB.put('rates', JSON.stringify(body));
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      await env.DB.put('rates', JSON.stringify(await request.json()));
+      return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     return new Response('Not found', { status: 404 });
