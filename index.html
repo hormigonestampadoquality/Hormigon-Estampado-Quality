@@ -277,9 +277,11 @@
             { id: 16, name: "Mano de Obra", qty: 1, unit: "servicio", price: 400000 }
         ];
 
+        // TARIFAS SIMPLIFICADAS - Sin rango +100 m² redundante
         const defaultRates = [
-            { maxM2: 60, price: 34000 }, { maxM2: 90, price: 33500 },
-            { maxM2: 100, price: 32000 }, { maxM2: 9999, price: 32000 }
+            { maxM2: 60, price: 34000 },
+            { maxM2: 90, price: 33500 },
+            { maxM2: 9999, price: 32000 }  // 91 m² en adelante
         ];
 
         let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
@@ -300,55 +302,47 @@
             });
         }
 
-        // --- LIMPIEZA AUTOMÁTICA DE DATOS CORRUPTOS ---
-        async function cleanCorruptedData() {
-            console.log('🧹 Iniciando limpieza de datos corruptos...');
+        // --- LIMPIEZA TOTAL AUTOMÁTICA (Se ejecuta solo una vez) ---
+        async function cleanAllData() {
+            // Verificar si ya se ejecutó la limpieza
+            if (sessionStorage.getItem('dataCleaned') === 'true') {
+                console.log('✅ Limpieza ya ejecutada previamente');
+                return;
+            }
+
+            console.log('🧹 Iniciando limpieza total de datos...');
             let cleaned = 0;
 
             try {
-                // Limpiar papelera: eliminar documentos con datos corruptos
-                const trashSnapshot = await db.collection('trash').get();
-                for (const doc of trashSnapshot.docs) {
-                    const data = doc.data();
-                    const isCorrupted = !data.client || 
-                                       data.client === 'Cliente sin nombre' || 
-                                       data.client === 'Sin nombre' ||
-                                       !data.total || 
-                                       isNaN(data.total) || 
-                                       data.total === 'NaN' ||
-                                       !data.deletedAt;
-                    
-                    if (isCorrupted) {
-                        await db.collection('trash').doc(doc.id).delete();
-                        cleaned++;
-                        console.log('🗑️ Eliminado de papelera:', doc.id);
-                    }
-                }
-
-                // Limpiar proyectos: eliminar documentos con datos corruptos
+                // Eliminar TODOS los proyectos existentes
                 const projectsSnapshot = await db.collection('projects').get();
                 for (const doc of projectsSnapshot.docs) {
-                    const data = doc.data();
-                    const isCorrupted = !data.client || 
-                                       data.client === 'Cliente sin nombre' ||
-                                       !data.total || 
-                                       isNaN(data.total) ||
-                                       data.total === 'NaN' ||
-                                       !data.m2 ||
-                                       isNaN(data.m2);
-                    
-                    if (isCorrupted) {
-                        await db.collection('projects').doc(doc.id).delete();
-                        cleaned++;
-                        console.log('🗑️ Eliminado de proyectos:', doc.id);
-                    }
+                    await db.collection('projects').doc(doc.id).delete();
+                    cleaned++;
+                    console.log('🗑️ Proyecto eliminado:', doc.id);
                 }
 
-                if (cleaned > 0) {
-                    console.log(`✅ Limpieza completada: ${cleaned} documentos corruptos eliminados`);
-                } else {
-                    console.log('✅ No se encontraron datos corruptos');
+                // Eliminar TODA la papelera
+                const trashSnapshot = await db.collection('trash').get();
+                for (const doc of trashSnapshot.docs) {
+                    await db.collection('trash').doc(doc.id).delete();
+                    cleaned++;
+                    console.log('🗑️ Papelera eliminada:', doc.id);
                 }
+
+                // Resetear tarifas a las nuevas (sin +100 m²)
+                await db.collection('settings').doc('rates').set({ rates: defaultRates });
+                console.log('💰 Tarifas actualizadas (eliminada tarifa +100 m²)');
+
+                if (cleaned > 0) {
+                    console.log(`✅ Limpieza completada: ${cleaned} documentos eliminados`);
+                    alert(`Sistema limpiado exitosamente.\n\nSe eliminaron ${cleaned} registros antiguos.\nLas tarifas fueron actualizadas.\n\nEl sistema está listo para usar.`);
+                } else {
+                    console.log('✅ No se encontraron datos para limpiar');
+                }
+
+                // Marcar como limpieza completada
+                sessionStorage.setItem('dataCleaned', 'true');
             } catch (error) {
                 console.error('❌ Error en limpieza:', error);
             }
@@ -356,8 +350,8 @@
 
         // --- PERSISTENCIA DE SESIÓN ---
         window.addEventListener('DOMContentLoaded', async () => {
-            // Ejecutar limpieza automática al cargar
-            await cleanCorruptedData();
+            // Ejecutar limpieza total al cargar (solo una vez)
+            await cleanAllData();
             
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginScreen').classList.add('hidden');
@@ -637,7 +631,7 @@
             container.innerHTML = rates.map((rate, index) => `
                 <div class="rate-card">
                     <div class="row align-items-center">
-                        <div class="col-md-6"><h6 class="mb-1">Hasta ${rate.maxM2 === 9999 ? 'más de 100' : rate.maxM2} m²</h6><small class="text-muted">Rango de superficie</small></div>
+                        <div class="col-md-6"><h6 class="mb-1">Hasta ${rate.maxM2 === 9999 ? '91 m² en adelante' : rate.maxM2} m²</h6><small class="text-muted">Rango de superficie</small></div>
                         <div class="col-md-4"><label class="form-label small">Precio por m²</label><input type="number" class="form-control" value="${rate.price}" id="rate-${index}" onchange="updateRate(${index}, this.value)"></div>
                         <div class="col-md-2"><div class="fw-bold text-success mt-4">$${formatMoney(rate.price)}/m²</div></div>
                     </div>
@@ -655,7 +649,7 @@
             let html = '<strong>Tarifas:</strong><br>';
             rates.forEach((rate, index) => {
                 const prevMax = index > 0 ? rates[index-1].maxM2 : 0;
-                const label = rate.maxM2 === 9999 ? '+' + prevMax + 'm²' : prevMax + '-' + rate.maxM2 + 'm²';
+                const label = rate.maxM2 === 9999 ? '91+ m²' : prevMax + '-' + rate.maxM2 + 'm²';
                 html += '• ' + label + ': $' + formatMoney(rate.price) + '/m²<br>';
             });
             info.innerHTML = '<small>' + html + '</small>';
