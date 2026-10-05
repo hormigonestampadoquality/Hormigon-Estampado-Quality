@@ -1,7 +1,0 @@
-name = "hormigon-estampado-quality"
-main = "index.js"
-compatibility_date = "2024-01-01"
-
-[[kv_namespaces]]
-binding = "DB"
-id = "015bd1033b4f4502b47a5a1fd2afa8c0"
