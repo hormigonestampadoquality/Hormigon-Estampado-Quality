@@ -1,0 +1,7 @@
+name = "hormigon-estampado-quality"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "DB"
+id = "REEMPLAZA_CON_TU_KV_ID"
