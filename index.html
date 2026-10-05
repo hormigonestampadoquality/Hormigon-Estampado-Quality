@@ -402,7 +402,6 @@
             document.getElementById('subtotalM2').textContent = '$' + formatMoney(subtotal);
             document.getElementById('summarySurface').textContent = m2 + ' m²';
             
-            // Mostrar/ocultar fila de IVA
             const ivaRow = document.getElementById('ivaRow');
             if (includeIVA) {
                 ivaRow.style.display = 'flex';
@@ -700,35 +699,31 @@
             doc.text('Forma de pago: transferencia bancaria', 110, 81); doc.text('Débito / Crédito / Efectivo', 110, 87);
             
             // Tabla con desglose de IVA si aplica
+            let tableBody;
             if (calc.includeIVA) {
-                doc.autoTable({
-                    startY: 95,
-                    head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
-                    body: [
-                        ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)],
-                        ['', '', '', ''],
-                        ['', '', 'Subtotal:', '$' + formatMoney(calc.subtotal)],
-                        ['', '', 'IVA (19%):', '$' + formatMoney(calc.iva)],
-                        ['', '', 'TOTAL:', '$' + formatMoney(calc.total)]
-                    ],
-                    theme: 'plain',
-                    headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
-                    bodyStyles: { fontSize: 10, cellPadding: 5 },
-                    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
-                    styles: { lineColor: [226, 232, 240], lineWidth: 0.3 }
-                });
+                tableBody = [
+                    ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)],
+                    ['', '', '', ''],
+                    ['', '', 'Subtotal:', '$' + formatMoney(calc.subtotal)],
+                    ['', '', 'IVA (19%):', '$' + formatMoney(calc.iva)],
+                    ['', '', 'TOTAL:', '$' + formatMoney(calc.total)]
+                ];
             } else {
-                doc.autoTable({
-                    startY: 95,
-                    head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
-                    body: [['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)]],
-                    theme: 'plain',
-                    headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
-                    bodyStyles: { fontSize: 10, cellPadding: 5 },
-                    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
-                    styles: { lineColor: [226, 232, 240], lineWidth: 0.3 }
-                });
+                tableBody = [
+                    ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)]
+                ];
             }
+            
+            doc.autoTable({
+                startY: 95,
+                head: [['DESCRIPCIÓN', 'CANT.', 'PRECIO UNIT.', 'IMPORTE']],
+                body: tableBody,
+                theme: 'plain',
+                headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold', halign: 'center' },
+                bodyStyles: { fontSize: 10, cellPadding: 5 },
+                columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+                styles: { lineColor: [226, 232, 240], lineWidth: 0.3 }
+            });
             
             const totalY = doc.lastAutoTable.finalY + 5;
             doc.setFillColor(241, 245, 255); doc.rect(110, totalY, 85, 12, 'F');
@@ -740,33 +735,93 @@
                 doc.text('Incluye IVA 19%', 115, totalY + 13);
             }
             
-            let currentY = totalY + 20;
+            // ITEMS INCLUIDOS - Más compacto
+            let currentY = totalY + 18;
             if(selectedItems.length > 0) {
-                doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
-                doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal'); currentY += 7;
-                selectedItems.forEach(item => { doc.text('• ' + item.name + ' (' + item.qty + ' ' + item.unit + ')', 15, currentY); currentY += 5; });
-                currentY += 8;
+                doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+                doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
+                currentY += 6;
+                
+                doc.setFontSize(8); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
+                // Mostrar items en 2 columnas para ahorrar espacio
+                const midPoint = Math.ceil(selectedItems.length / 2);
+                for (let i = 0; i < midPoint; i++) {
+                    const item = selectedItems[i];
+                    doc.text('• ' + item.name + ' (' + item.qty + ' ' + item.unit + ')', 15, currentY);
+                    if (selectedItems[midPoint + i]) {
+                        const item2 = selectedItems[midPoint + i];
+                        doc.text('• ' + item2.name + ' (' + item2.qty + ' ' + item2.unit + ')', 110, currentY);
+                    }
+                    currentY += 4.5;
+                }
+                currentY += 4;
             }
-            doc.setFontSize(13); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('ALCANCE DEL PROYECTO', 15, currentY);
-            doc.setFontSize(10); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
-            const alcance = ['• Preparación, nivelación y compactación del terreno', '• Instalación de malla ACMA C92', '• Hormigón premezclado HN25, espesor 10 cm', '• Incorporación de fibra de polipropileno', '• Barrera antihumedad de polietileno', '• Endurecedor con color a elección', '• Estampado con moldes profesionales', '• Diseño y color a elección del cliente', '• Juntas y cortes de dilatación', '• Sello acrílico protector de alto rendimiento', '• Limpieza y entrega final del proyecto'];
-            currentY += 8; alcance.forEach(line => { doc.text(line, 15, currentY); currentY += 6; });
-            currentY += 5; doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('GARANTÍA', 15, currentY);
-            doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal'); currentY += 7;
-            doc.text('231 días corridos sobre instalación, materiales y terminaciones', 15, currentY); currentY += 5;
-            doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al', 15, currentY); currentY += 5;
-            doc.text('proceso constructivo.', 15, currentY); currentY += 10;
-            doc.setFontSize(12); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('NOTAS Y TÉRMINOS', 15, currentY);
-            doc.setFontSize(9); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal'); currentY += 7;
-            doc.text('Esta cotización tiene una vigencia de 16 días naturales.', 15, currentY); currentY += 5;
-            doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 5;
-            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY); currentY += 15;
-            doc.setDrawColor(...grayColor); doc.setLineWidth(0.3); doc.line(15, currentY, 80, currentY);
-            doc.setFontSize(9); doc.setTextColor(...darkColor); doc.text('Nombre y firma de aceptación', 15, currentY + 5);
-            doc.setFillColor(...primaryColor); doc.rect(0, 270, 210, 27, 'F');
-            doc.setFontSize(11); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold'); doc.text('Construcción y Remodelaciones Quality SpA', 105, 278, { align: 'center' });
-            doc.setFontSize(10); doc.setFont(undefined, 'normal'); doc.text('RUT: 78.339.203-8 | Presupuesto válido por 16 días', 105, 285, { align: 'center' });
-            doc.setFontSize(9); doc.text('WhatsApp: +56 9 2821 3391 | Instagram: @hormigon_estampado.quality', 105, 292, { align: 'center' });
+
+            // ALCANCE DEL PROYECTO - Completo
+            doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+            doc.text('ALCANCE DEL PROYECTO', 15, currentY);
+            currentY += 6;
+            
+            doc.setFontSize(8); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
+            const alcance = [
+                '• Preparación, nivelación y compactación del terreno',
+                '• Instalación de malla ACMA C92',
+                '• Hormigón premezclado HN25, espesor 10 cm',
+                '• Incorporación de fibra de polipropileno',
+                '• Barrera antihumedad de polietileno',
+                '• Endurecedor con color a elección',
+                '• Estampado con moldes profesionales',
+                '• Diseño y color a elección del cliente',
+                '• Juntas y cortes de dilatación',
+                '• Sello acrílico protector de alto rendimiento',
+                '• Limpieza y entrega final del proyecto'
+            ];
+            
+            // Mostrar alcance en 2 columnas
+            const alcanceMid = Math.ceil(alcance.length / 2);
+            for (let i = 0; i < alcanceMid; i++) {
+                doc.text(alcance[i], 15, currentY);
+                if (alcance[alcanceMid + i]) {
+                    doc.text(alcance[alcanceMid + i], 110, currentY);
+                }
+                currentY += 4.5;
+            }
+            currentY += 4;
+
+            // GARANTÍA
+            doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+            doc.text('GARANTÍA', 15, currentY);
+            currentY += 6;
+            doc.setFontSize(8); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
+            doc.text('231 días corridos sobre instalación, materiales y terminaciones', 15, currentY); currentY += 4;
+            doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al', 15, currentY); currentY += 4;
+            doc.text('proceso constructivo.', 15, currentY); currentY += 6;
+
+            // NOTAS Y TÉRMINOS
+            doc.setFontSize(11); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+            doc.text('NOTAS Y TÉRMINOS', 15, currentY);
+            currentY += 6;
+            doc.setFontSize(8); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
+            doc.text('Esta cotización tiene una vigencia de 16 días naturales.', 15, currentY); currentY += 4;
+            doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 4;
+            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY); currentY += 8;
+
+            // Firma
+            doc.setDrawColor(...grayColor); doc.setLineWidth(0.3);
+            doc.line(15, currentY, 80, currentY);
+            doc.setFontSize(8); doc.setTextColor(...darkColor);
+            doc.text('Nombre y firma de aceptación', 15, currentY + 4);
+
+            // Footer
+            doc.setFillColor(...primaryColor);
+            doc.rect(0, 270, 210, 27, 'F');
+            doc.setFontSize(11); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold');
+            doc.text('Construcción y Remodelaciones Quality SpA', 105, 278, { align: 'center' });
+            doc.setFontSize(10); doc.setFont(undefined, 'normal');
+            doc.text('RUT: 78.339.203-8 | Presupuesto válido por 16 días', 105, 285, { align: 'center' });
+            doc.setFontSize(9);
+            doc.text('WhatsApp: +56 9 2821 3391 | Instagram: @hormigon_estampado.quality', 105, 292, { align: 'center' });
+
             doc.save('Cotizacion_' + client.replace(/\s+/g, '_') + '_' + quoteNumber + '.pdf');
             return doc;
         }
