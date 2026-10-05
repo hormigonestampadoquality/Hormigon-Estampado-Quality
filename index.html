@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quality Pavimentos - Sistema de Cotizaciones</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -299,8 +300,65 @@
             });
         }
 
+        // --- LIMPIEZA AUTOMÁTICA DE DATOS CORRUPTOS ---
+        async function cleanCorruptedData() {
+            console.log('🧹 Iniciando limpieza de datos corruptos...');
+            let cleaned = 0;
+
+            try {
+                // Limpiar papelera: eliminar documentos con datos corruptos
+                const trashSnapshot = await db.collection('trash').get();
+                for (const doc of trashSnapshot.docs) {
+                    const data = doc.data();
+                    const isCorrupted = !data.client || 
+                                       data.client === 'Cliente sin nombre' || 
+                                       data.client === 'Sin nombre' ||
+                                       !data.total || 
+                                       isNaN(data.total) || 
+                                       data.total === 'NaN' ||
+                                       !data.deletedAt;
+                    
+                    if (isCorrupted) {
+                        await db.collection('trash').doc(doc.id).delete();
+                        cleaned++;
+                        console.log('🗑️ Eliminado de papelera:', doc.id);
+                    }
+                }
+
+                // Limpiar proyectos: eliminar documentos con datos corruptos
+                const projectsSnapshot = await db.collection('projects').get();
+                for (const doc of projectsSnapshot.docs) {
+                    const data = doc.data();
+                    const isCorrupted = !data.client || 
+                                       data.client === 'Cliente sin nombre' ||
+                                       !data.total || 
+                                       isNaN(data.total) ||
+                                       data.total === 'NaN' ||
+                                       !data.m2 ||
+                                       isNaN(data.m2);
+                    
+                    if (isCorrupted) {
+                        await db.collection('projects').doc(doc.id).delete();
+                        cleaned++;
+                        console.log('🗑️ Eliminado de proyectos:', doc.id);
+                    }
+                }
+
+                if (cleaned > 0) {
+                    console.log(`✅ Limpieza completada: ${cleaned} documentos corruptos eliminados`);
+                } else {
+                    console.log('✅ No se encontraron datos corruptos');
+                }
+            } catch (error) {
+                console.error('❌ Error en limpieza:', error);
+            }
+        }
+
         // --- PERSISTENCIA DE SESIÓN ---
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Ejecutar limpieza automática al cargar
+            await cleanCorruptedData();
+            
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainPanel').classList.remove('hidden');
@@ -330,7 +388,7 @@
         }
 
         function showSection(section, element) {
-            sessionStorage.setItem('currentSection', section); // Guardar sección actual
+            sessionStorage.setItem('currentSection', section);
             ['nueva', 'proyectos', 'papelera', 'tarifas', 'inventario'].forEach(s => document.getElementById('sec-' + s).classList.add('hidden'));
             document.getElementById('sec-' + section).classList.remove('hidden');
             document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
