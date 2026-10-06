@@ -36,6 +36,27 @@
         .total-amount { font-size: 2.5rem; font-weight: bold; color: var(--secondary); }
         .hidden { display: none !important; }
         
+        .editing-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .editing-banner button {
+            background: white;
+            color: #d97706;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
         .iva-checkbox {
             background: #f8fafc;
             border: 2px solid #e2e8f0;
@@ -127,6 +148,13 @@
                 <!-- NUEVA COTIZACIÓN -->
                 <div id="sec-nueva">
                     <h2 class="mb-4">Nueva Cotización</h2>
+                    
+                    <!-- Banner de edición -->
+                    <div id="editingBanner" class="editing-banner hidden">
+                        <span><i class="bi bi-pencil-square"></i> Editando proyecto: <strong id="editingProjectName"></strong></span>
+                        <button onclick="cancelEditing()"><i class="bi bi-x"></i> Cancelar edición</button>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-8">
                             <div class="card card-custom">
@@ -190,7 +218,7 @@
                                         <button class="btn btn-success w-100 mb-2" onclick="generatePDF()">Generar PDF</button>
                                         <button class="btn btn-primary w-100 mb-2" onclick="sendWhatsApp()">WhatsApp</button>
                                         <button class="btn btn-info w-100 mb-2 text-white" onclick="sendEmail()">Enviar Correo</button>
-                                        <button class="btn btn-secondary w-100" onclick="saveQuote()">Guardar Proyecto</button>
+                                        <button class="btn btn-secondary w-100" id="saveButton" onclick="saveQuote()">Guardar Proyecto</button>
                                     </div>
                                 </div>
                             </div>
@@ -289,6 +317,7 @@
         ];
 
         let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
+        let editingProjectId = null; // Variable para rastrear si estamos editando un proyecto
 
         function loadLogo() {
             return new Promise((resolve, reject) => {
@@ -446,10 +475,12 @@
             renderInventory();
         }
 
+        // FUNCIÓN MODIFICADA: Guardar o actualizar proyecto
         async function saveQuote() {
             const calc = calculateTotal();
             if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
-            const project = {
+            
+            const projectData = {
                 date: document.getElementById('quoteDate').value || new Date().toISOString().split('T')[0],
                 client: document.getElementById('clientName').value || 'Sin nombre',
                 phone: document.getElementById('clientPhone').value,
@@ -459,8 +490,87 @@
                 iva: calc.iva, total: calc.total, includeIVA: calc.includeIVA,
                 items: [...selectedItems], status: 'active'
             };
-            await db.collection('projects').add(project);
-            alert('Proyecto guardado exitosamente');
+            
+            if (editingProjectId) {
+                // Actualizar proyecto existente
+                await db.collection('projects').doc(editingProjectId).update(projectData);
+                alert('✅ Proyecto actualizado exitosamente');
+                cancelEditing(); // Limpiar modo edición
+            } else {
+                // Crear nuevo proyecto
+                await db.collection('projects').add(projectData);
+                alert('✅ Proyecto guardado exitosamente');
+            }
+        }
+
+        // FUNCIÓN MODIFICADA: Cargar proyecto para editar
+        async function loadProject(id) {
+            const doc = await db.collection('projects').doc(id).get();
+            if(!doc.exists) { alert('Proyecto no encontrado'); return; }
+            const p = { id: doc.id, ...doc.data() };
+            
+            // Cargar datos en el formulario
+            document.getElementById('clientName').value = p.client || '';
+            document.getElementById('clientPhone').value = p.phone || '';
+            document.getElementById('clientEmail').value = p.email || '';
+            document.getElementById('clientAddress').value = p.address || '';
+            document.getElementById('quoteDate').value = p.date || '';
+            document.getElementById('surfaceM2').value = p.m2 || 0;
+            document.getElementById('includeIVA').checked = p.includeIVA || false;
+            selectedItems = p.items || [];
+            
+            // Activar modo edición
+            editingProjectId = id;
+            document.getElementById('editingBanner').classList.remove('hidden');
+            document.getElementById('editingProjectName').textContent = p.client || 'Sin nombre';
+            document.getElementById('saveButton').textContent = 'Actualizar Proyecto';
+            document.querySelector('#sec-nueva h2').textContent = 'Editar Cotización';
+            
+            showSection('nueva', document.querySelector(`.sidebar .nav-link[onclick*="'nueva'"]`));
+            calculateTotal(); renderInventoryList(); updateSummary();
+        }
+
+        // NUEVA FUNCIÓN: Cancelar edición
+        function cancelEditing() {
+            editingProjectId = null;
+            document.getElementById('editingBanner').classList.add('hidden');
+            document.getElementById('saveButton').textContent = 'Guardar Proyecto';
+            document.querySelector('#sec-nueva h2').textContent = 'Nueva Cotización';
+            
+            // Limpiar formulario
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientEmail').value = '';
+            document.getElementById('clientAddress').value = '';
+            document.getElementById('quoteDate').valueAsDate = new Date();
+            document.getElementById('surfaceM2').value = '';
+            document.getElementById('includeIVA').checked = false;
+            selectedItems = [...inventory];
+            
+            calculateTotal(); renderInventoryList(); updateSummary();
+        }
+
+        async function resendProject(id) {
+            await loadProject(id);
+            setTimeout(() => {
+                if(confirm('¿Enviar por WhatsApp?')) sendWhatsApp();
+                else if(confirm('¿Enviar por correo?')) sendEmail();
+            }, 500);
+        }
+
+        async function deleteProject(id) {
+            if(!confirm('¿Mover a papelera?')) return;
+            const doc = await db.collection('projects').doc(id).get();
+            if(!doc.exists) return;
+            const p = { id: doc.id, ...doc.data() };
+            await db.collection('trash').add({
+                client: p.client || 'Cliente sin nombre',
+                total: p.total || 0,
+                deletedAt: new Date().toISOString(),
+                originalData: p
+            });
+            await db.collection('projects').doc(id).delete();
+            renderProjects();
         }
 
         async function renderProjects() {
@@ -487,45 +597,6 @@
                         </div>
                     </div>
                 </div>`).join('');
-        }
-
-        async function loadProject(id) {
-            const doc = await db.collection('projects').doc(id).get();
-            if(!doc.exists) { alert('Proyecto no encontrado'); return; }
-            const p = { id: doc.id, ...doc.data() };
-            document.getElementById('clientName').value = p.client || '';
-            document.getElementById('clientPhone').value = p.phone || '';
-            document.getElementById('clientEmail').value = p.email || '';
-            document.getElementById('clientAddress').value = p.address || '';
-            document.getElementById('quoteDate').value = p.date || '';
-            document.getElementById('surfaceM2').value = p.m2 || 0;
-            document.getElementById('includeIVA').checked = p.includeIVA || false;
-            selectedItems = p.items || [];
-            showSection('nueva', document.querySelector(`.sidebar .nav-link[onclick*="'nueva'"]`));
-            calculateTotal(); renderInventoryList(); updateSummary();
-        }
-
-        async function resendProject(id) {
-            await loadProject(id);
-            setTimeout(() => {
-                if(confirm('¿Enviar por WhatsApp?')) sendWhatsApp();
-                else if(confirm('¿Enviar por correo?')) sendEmail();
-            }, 500);
-        }
-
-        async function deleteProject(id) {
-            if(!confirm('¿Mover a papelera?')) return;
-            const doc = await db.collection('projects').doc(id).get();
-            if(!doc.exists) return;
-            const p = { id: doc.id, ...doc.data() };
-            await db.collection('trash').add({
-                client: p.client || 'Cliente sin nombre',
-                total: p.total || 0,
-                deletedAt: new Date().toISOString(),
-                originalData: p
-            });
-            await db.collection('projects').doc(id).delete();
-            renderProjects();
         }
 
         async function renderTrash() {
@@ -635,7 +706,6 @@
             const quoteNumber = 'COT-' + Date.now().toString().slice(-6);
             const primaryColor = [79, 70, 229], darkColor = [30, 41, 59], grayColor = [100, 116, 139];
 
-            // HEADER
             if(logoBase64) doc.addImage(logoBase64, 'PNG', 15, 12, 25, 25);
             doc.setFontSize(16); doc.setTextColor(...darkColor); doc.setFont(undefined, 'bold'); doc.text('QUALITY PAVIMENTOS', 45, 20);
             doc.setFontSize(8); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
@@ -652,7 +722,6 @@
             
             doc.setDrawColor(...primaryColor); doc.setLineWidth(0.8); doc.line(15, 48, 195, 48);
 
-            // DATOS CLIENTE Y CONDICIONES
             doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold'); doc.text('COTIZADO PARA', 15, 56);
             doc.setFontSize(9); doc.setTextColor(...darkColor); doc.setFont(undefined, 'normal');
             doc.text(client, 15, 62);
@@ -667,7 +736,6 @@
             doc.text('Forma de pago: transferencia bancaria', 110, 72);
             doc.text('Débito / Crédito / Efectivo', 110, 77);
 
-            // TABLA DE VALORES - CON IVA DENTRO
             let tableBody;
             if (calc.includeIVA) {
                 tableBody = [
@@ -697,7 +765,6 @@
 
             let currentY = doc.lastAutoTable.finalY + 10;
 
-            // ITEMS INCLUIDOS - SOLO NOMBRES (sin cantidades)
             if(selectedItems.length > 0) {
                 doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
                 doc.text('ITEMS INCLUIDOS EN EL PRECIO', 15, currentY);
@@ -717,7 +784,6 @@
                 currentY += 4;
             }
 
-            // ALCANCE DEL PROYECTO - 2 columnas
             doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
             doc.text('ALCANCE DEL PROYECTO', 15, currentY);
             currentY += 5;
@@ -747,7 +813,6 @@
             }
             currentY += 4;
 
-            // GARANTÍA
             doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
             doc.text('GARANTÍA', 15, currentY);
             currentY += 5;
@@ -756,7 +821,6 @@
             doc.text('ejecutadas por nuestra empresa, aplicable a fallas atribuibles al', 15, currentY); currentY += 3.5;
             doc.text('proceso constructivo.', 15, currentY); currentY += 5;
 
-            // NOTAS Y TÉRMINOS
             doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
             doc.text('NOTAS Y TÉRMINOS', 15, currentY);
             currentY += 5;
@@ -765,13 +829,11 @@
             doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 3.5;
             doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY); currentY += 6;
 
-            // Firma
             doc.setDrawColor(...grayColor); doc.setLineWidth(0.3);
             doc.line(15, currentY, 75, currentY);
             doc.setFontSize(7.5); doc.setTextColor(...darkColor);
             doc.text('Nombre y firma de aceptación', 15, currentY + 4);
 
-            // FOOTER COMPACTO
             doc.setFillColor(...primaryColor);
             doc.rect(0, 275, 210, 22, 'F');
             doc.setFontSize(10); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold');
@@ -791,7 +853,7 @@
             const client = document.getElementById('clientName').value || 'Cliente';
             if(!phone) { alert('Ingrese un teléfono'); return; }
             await generatePDF();
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
             if (calc.includeIVA) { msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotal) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n'; }
             msg += '\n';
             if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
@@ -807,7 +869,7 @@
             await generatePDF();
             const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
             let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
-            if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotal) + '\n🧾 IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
+            if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotal) + '\n IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
             body += '\n';
             if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
             body += 'ALCANCE:\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor color\n✓ Estampado profesional\n✓ Juntas dilatación\n✓ Sello acrílico\n✓ Limpieza final\n\nGARANTÍA: 231 días\n\nPAGO:\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• SIN ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality';
