@@ -73,6 +73,12 @@
         .iva-checkbox input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
         .iva-checkbox label { margin: 0; cursor: pointer; font-weight: 600; color: var(--dark); }
         
+        .extras-table { width: 100%; border-collapse: collapse; }
+        .extras-table th { background: var(--secondary); color: white; padding: 10px; text-align: left; font-size: 0.9rem; }
+        .extras-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+        .extras-table input { width: 100%; border: 1px solid #e2e8f0; border-radius: 5px; padding: 6px; }
+        .btn-remove-extra { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        
         .footer-credits { text-align: center; padding: 25px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; color: var(--gray); font-size: 14px; margin-top: auto; }
         .footer-credits a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.3s; }
         .footer-credits a:hover { color: var(--primary-dark); text-decoration: underline; }
@@ -149,7 +155,6 @@
                 <div id="sec-nueva">
                     <h2 class="mb-4">Nueva Cotización</h2>
                     
-                    <!-- Banner de edición -->
                     <div id="editingBanner" class="editing-banner hidden">
                         <span><i class="bi bi-pencil-square"></i> Editando proyecto: <strong id="editingProjectName"></strong></span>
                         <button onclick="cancelEditing()"><i class="bi bi-x"></i> Cancelar edición</button>
@@ -186,6 +191,10 @@
                                             <div class="col-md-4"><small class="text-muted">Superficie</small><div class="fw-bold" id="displayM2">0 m²</div></div>
                                             <div class="col-md-4"><small class="text-muted">Subtotal</small><div class="fw-bold" id="subtotalM2">$0</div></div>
                                         </div>
+                                        <div class="row mt-2" id="extrasSummaryRow" style="display: none;">
+                                            <div class="col-md-6"><small class="text-muted">Trabajos Extras</small><div class="fw-bold text-info" id="extrasTotal">$0</div></div>
+                                            <div class="col-md-6"><small class="text-muted">Subtotal + Extras</small><div class="fw-bold" id="subtotalWithExtras">$0</div></div>
+                                        </div>
                                         <div class="row mt-2" id="ivaRow" style="display: none;">
                                             <div class="col-md-6"><small class="text-muted">IVA (19%)</small><div class="fw-bold text-warning" id="ivaAmount">$0</div></div>
                                             <div class="col-md-6"><small class="text-muted">TOTAL</small><div class="fw-bold text-success" id="totalWithIVA">$0</div></div>
@@ -193,6 +202,34 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- TRABAJOS EXTRAS -->
+                            <div class="card card-custom">
+                                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                                    <span>Trabajos Extras</span>
+                                    <button class="btn btn-sm btn-light" onclick="addExtraRow()"><i class="bi bi-plus"></i> Agregar</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="info-badge">Agrega trabajos adicionales que se sumarán al total de la cotización.</div>
+                                    <table class="extras-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 45%;">Descripción</th>
+                                                <th style="width: 15%;">Cantidad</th>
+                                                <th style="width: 20%;">Precio Unit.</th>
+                                                <th style="width: 15%;">Importe</th>
+                                                <th style="width: 5%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="extrasTableBody">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted py-3">No hay trabajos extras agregados</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <div class="card card-custom">
                                 <div class="card-header-custom d-flex justify-content-between align-items-center">
                                     <span>Items Incluidos en el Precio</span>
@@ -213,6 +250,7 @@
                                         <div class="mb-3"><small class="text-muted">Superficie</small><div class="fw-bold" id="summarySurface">0 m²</div></div>
                                     </div>
                                     <div class="mb-3"><small class="text-muted">Items Incluidos</small><div id="summaryItems" class="small">Ninguno</div></div>
+                                    <div class="mb-3"><small class="text-muted">Trabajos Extras</small><div class="fw-bold text-info" id="summaryExtras">$0</div></div>
                                     <div class="total-display mt-4"><small>TOTAL A COBRAR</small><div class="total-amount" id="totalAmount">$0</div></div>
                                     <div class="mt-4">
                                         <button class="btn btn-success w-100 mb-2" onclick="generatePDF()">Generar PDF</button>
@@ -317,7 +355,8 @@
         ];
 
         let inventory = [], selectedItems = [], projects = [], trash = [], rates = [], logoBase64 = null;
-        let editingProjectId = null; // Variable para rastrear si estamos editando un proyecto
+        let editingProjectId = null;
+        let extrasList = [];
 
         function loadLogo() {
             return new Promise((resolve, reject) => {
@@ -378,21 +417,80 @@
             if(section === 'inventario') renderInventory();
         }
 
+        // TRABAJOS EXTRAS - Funciones
+        function addExtraRow() {
+            extrasList.push({ id: Date.now(), description: '', qty: 1, price: 0 });
+            renderExtrasTable();
+            calculateTotal();
+        }
+
+        function removeExtraRow(id) {
+            extrasList = extrasList.filter(e => e.id !== id);
+            renderExtrasTable();
+            calculateTotal();
+        }
+
+        function updateExtra(id, field, value) {
+            const extra = extrasList.find(e => e.id === id);
+            if(field === 'qty' || field === 'price') value = parseFloat(value) || 0;
+            else value = value;
+            extra[field] = value;
+            renderExtrasTable();
+            calculateTotal();
+        }
+
+        function renderExtrasTable() {
+            const tbody = document.getElementById('extrasTableBody');
+            if(extrasList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No hay trabajos extras agregados</td></tr>';
+                return;
+            }
+            tbody.innerHTML = extrasList.map(extra => {
+                const importe = (extra.qty || 0) * (extra.price || 0);
+                return `
+                    <tr>
+                        <td><input type="text" value="${extra.description}" placeholder="Descripción del trabajo" onchange="updateExtra(${extra.id}, 'description', this.value)"></td>
+                        <td><input type="number" value="${extra.qty}" placeholder="Opcional" onchange="updateExtra(${extra.id}, 'qty', this.value)"></td>
+                        <td><input type="number" value="${extra.price}" placeholder="0" onchange="updateExtra(${extra.id}, 'price', this.value)"></td>
+                        <td class="fw-bold">$${formatMoney(importe)}</td>
+                        <td><button class="btn-remove-extra" onclick="removeExtraRow(${extra.id})"><i class="bi bi-trash"></i></button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getExtrasTotal() {
+            return extrasList.reduce((sum, extra) => sum + ((extra.qty || 0) * (extra.price || 0)), 0);
+        }
+
         function calculateTotal() {
             const m2 = parseFloat(document.getElementById('surfaceM2').value) || 0;
             const includeIVA = document.getElementById('includeIVA').checked;
             let pricePerM2 = 0;
             for (const rate of rates) { if (m2 <= rate.maxM2) { pricePerM2 = rate.price; break; } }
             const subtotal = m2 * pricePerM2;
-            const iva = includeIVA ? subtotal * 0.19 : 0;
-            const total = subtotal + iva;
+            const extrasTotal = getExtrasTotal();
+            const subtotalWithExtras = subtotal + extrasTotal;
+            const iva = includeIVA ? subtotalWithExtras * 0.19 : 0;
+            const total = subtotalWithExtras + iva;
             
             document.getElementById('pricePerM2').textContent = '$' + formatMoney(pricePerM2);
             document.getElementById('displayM2').textContent = m2 + ' m²';
             document.getElementById('subtotalM2').textContent = '$' + formatMoney(subtotal);
             document.getElementById('summarySurface').textContent = m2 + ' m²';
+            document.getElementById('summaryExtras').textContent = '$' + formatMoney(extrasTotal);
             
+            const extrasSummaryRow = document.getElementById('extrasSummaryRow');
             const ivaRow = document.getElementById('ivaRow');
+            
+            if (extrasTotal > 0) {
+                extrasSummaryRow.style.display = 'flex';
+                document.getElementById('extrasTotal').textContent = '$' + formatMoney(extrasTotal);
+                document.getElementById('subtotalWithExtras').textContent = '$' + formatMoney(subtotalWithExtras);
+            } else {
+                extrasSummaryRow.style.display = 'none';
+            }
+            
             if (includeIVA) {
                 ivaRow.style.display = 'flex';
                 document.getElementById('ivaAmount').textContent = '$' + formatMoney(iva);
@@ -400,10 +498,10 @@
                 document.getElementById('totalAmount').textContent = '$' + formatMoney(total);
             } else {
                 ivaRow.style.display = 'none';
-                document.getElementById('totalAmount').textContent = '$' + formatMoney(subtotal);
+                document.getElementById('totalAmount').textContent = '$' + formatMoney(subtotalWithExtras);
             }
             
-            return { m2, pricePerM2, subtotal, iva, total, includeIVA };
+            return { m2, pricePerM2, subtotal, extrasTotal, subtotalWithExtras, iva, total, includeIVA };
         }
 
         function renderInventoryList() {
@@ -475,7 +573,6 @@
             renderInventory();
         }
 
-        // FUNCIÓN MODIFICADA: Guardar o actualizar proyecto
         async function saveQuote() {
             const calc = calculateTotal();
             if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
@@ -487,29 +584,27 @@
                 email: document.getElementById('clientEmail').value,
                 address: document.getElementById('clientAddress').value,
                 m2: calc.m2, pricePerM2: calc.pricePerM2, subtotal: calc.subtotal,
+                extrasTotal: calc.extrasTotal, subtotalWithExtras: calc.subtotalWithExtras,
                 iva: calc.iva, total: calc.total, includeIVA: calc.includeIVA,
+                extras: [...extrasList],
                 items: [...selectedItems], status: 'active'
             };
             
             if (editingProjectId) {
-                // Actualizar proyecto existente
                 await db.collection('projects').doc(editingProjectId).update(projectData);
                 alert('✅ Proyecto actualizado exitosamente');
-                cancelEditing(); // Limpiar modo edición
+                cancelEditing();
             } else {
-                // Crear nuevo proyecto
                 await db.collection('projects').add(projectData);
                 alert('✅ Proyecto guardado exitosamente');
             }
         }
 
-        // FUNCIÓN MODIFICADA: Cargar proyecto para editar
         async function loadProject(id) {
             const doc = await db.collection('projects').doc(id).get();
             if(!doc.exists) { alert('Proyecto no encontrado'); return; }
             const p = { id: doc.id, ...doc.data() };
             
-            // Cargar datos en el formulario
             document.getElementById('clientName').value = p.client || '';
             document.getElementById('clientPhone').value = p.phone || '';
             document.getElementById('clientEmail').value = p.email || '';
@@ -517,9 +612,9 @@
             document.getElementById('quoteDate').value = p.date || '';
             document.getElementById('surfaceM2').value = p.m2 || 0;
             document.getElementById('includeIVA').checked = p.includeIVA || false;
+            extrasList = p.extras || [];
             selectedItems = p.items || [];
             
-            // Activar modo edición
             editingProjectId = id;
             document.getElementById('editingBanner').classList.remove('hidden');
             document.getElementById('editingProjectName').textContent = p.client || 'Sin nombre';
@@ -527,17 +622,17 @@
             document.querySelector('#sec-nueva h2').textContent = 'Editar Cotización';
             
             showSection('nueva', document.querySelector(`.sidebar .nav-link[onclick*="'nueva'"]`));
+            renderExtrasTable();
             calculateTotal(); renderInventoryList(); updateSummary();
         }
 
-        // NUEVA FUNCIÓN: Cancelar edición
         function cancelEditing() {
             editingProjectId = null;
+            extrasList = [];
             document.getElementById('editingBanner').classList.add('hidden');
             document.getElementById('saveButton').textContent = 'Guardar Proyecto';
             document.querySelector('#sec-nueva h2').textContent = 'Nueva Cotización';
             
-            // Limpiar formulario
             document.getElementById('clientName').value = '';
             document.getElementById('clientPhone').value = '';
             document.getElementById('clientEmail').value = '';
@@ -547,6 +642,7 @@
             document.getElementById('includeIVA').checked = false;
             selectedItems = [...inventory];
             
+            renderExtrasTable();
             calculateTotal(); renderInventoryList(); updateSummary();
         }
 
@@ -736,19 +832,28 @@
             doc.text('Forma de pago: transferencia bancaria', 110, 72);
             doc.text('Débito / Crédito / Efectivo', 110, 77);
 
-            let tableBody;
+            // TABLA CON HORMIGÓN + EXTRAS + IVA
+            let tableBody = [];
+            
+            // Fila principal de hormigón
+            tableBody.push(['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)]);
+            
+            // Filas de trabajos extras
+            extrasList.forEach(extra => {
+                const importe = (extra.qty || 0) * (extra.price || 0);
+                if(extra.description && importe > 0) {
+                    const qtyText = extra.qty > 1 ? extra.qty + ' unid' : '';
+                    tableBody.push([extra.description, qtyText, '$' + formatMoney(extra.price), '$' + formatMoney(importe)]);
+                }
+            });
+            
+            // Filas de totales
             if (calc.includeIVA) {
-                tableBody = [
-                    ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)],
-                    [{ content: 'Subtotal', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.subtotal)],
-                    [{ content: 'IVA (19%)', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.iva)],
-                    [{ content: 'TOTAL', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }, { content: '$' + formatMoney(calc.total), styles: { fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }]
-                ];
+                tableBody.push([{ content: 'Subtotal', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.subtotalWithExtras)]);
+                tableBody.push([{ content: 'IVA (19%)', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.iva)]);
+                tableBody.push([{ content: 'TOTAL', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }, { content: '$' + formatMoney(calc.total), styles: { fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }]);
             } else {
-                tableBody = [
-                    ['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)],
-                    [{ content: 'TOTAL', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }, { content: '$' + formatMoney(calc.subtotal), styles: { fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }]
-                ];
+                tableBody.push([{ content: 'TOTAL', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }, { content: '$' + formatMoney(calc.subtotalWithExtras), styles: { fontStyle: 'bold', fillColor: [241, 245, 255], textColor: primaryColor } }]);
             }
             
             doc.autoTable({
@@ -827,13 +932,9 @@
             doc.setFontSize(7.5); doc.setTextColor(...grayColor); doc.setFont(undefined, 'normal');
             doc.text('Esta cotización tiene una vigencia de 16 días naturales.', 15, currentY); currentY += 3.5;
             doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 3.5;
-            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY); currentY += 6;
+            doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY);
 
-            doc.setDrawColor(...grayColor); doc.setLineWidth(0.3);
-            doc.line(15, currentY, 75, currentY);
-            doc.setFontSize(7.5); doc.setTextColor(...darkColor);
-            doc.text('Nombre y firma de aceptación', 15, currentY + 4);
-
+            // FOOTER COMPACTO
             doc.setFillColor(...primaryColor);
             doc.rect(0, 275, 210, 22, 'F');
             doc.setFontSize(10); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold');
@@ -853,9 +954,16 @@
             const client = document.getElementById('clientName').value || 'Cliente';
             if(!phone) { alert('Ingrese un teléfono'); return; }
             await generatePDF();
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n📐 *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
-            if (calc.includeIVA) { msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotal) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n'; }
+            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            if (calc.includeIVA) { msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotalWithExtras) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n'; }
             msg += '\n';
+            if(extrasList.length > 0) {
+                msg += '*TRABAJOS EXTRAS:*\n';
+                extrasList.forEach(extra => {
+                    if(extra.description) msg += '➕ ' + extra.description + ': $' + formatMoney((extra.qty || 0) * (extra.price || 0)) + '\n';
+                });
+                msg += '\n';
+            }
             if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
             msg += '*ALCANCE DEL PROYECTO:*\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra de polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor con color\n✓ Estampado profesional\n✓ Juntas y dilatación\n✓ Sello acrílico\n✓ Limpieza y entrega\n\n*GARANTÍA:* 231 días\n\n*FORMA DE PAGO:*\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• NO SOLICITAMOS ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality\nVálido 16 días';
             setTimeout(() => { window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'); alert('✅ PDF descargado. Adjúntelo en WhatsApp.'); }, 500);
@@ -868,9 +976,16 @@
             if(!email) { alert('Ingrese un correo'); return; }
             await generatePDF();
             const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
-            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n📋 Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
-            if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotal) + '\n IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
+            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
+            if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotalWithExtras) + '\n🧾 IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
             body += '\n';
+            if(extrasList.length > 0) {
+                body += 'TRABAJOS EXTRAS:\n';
+                extrasList.forEach(extra => {
+                    if(extra.description) body += '➕ ' + extra.description + ': $' + formatMoney((extra.qty || 0) * (extra.price || 0)) + '\n';
+                });
+                body += '\n';
+            }
             if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
             body += 'ALCANCE:\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor color\n✓ Estampado profesional\n✓ Juntas dilatación\n✓ Sello acrílico\n✓ Limpieza final\n\nGARANTÍA: 231 días\n\nPAGO:\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• SIN ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality';
             setTimeout(() => { window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); alert('✅ PDF descargado. Adjúntelo en el correo.'); }, 500);
@@ -891,6 +1006,8 @@
                 updateRatesInfo();
             } catch(e) { inventory = defaultInventory; rates = defaultRates; updateRatesInfo(); }
             selectedItems = [...inventory];
+            extrasList = [];
+            renderExtrasTable();
             renderInventoryList(); calculateTotal(); updateSummary();
         }
     </script>
