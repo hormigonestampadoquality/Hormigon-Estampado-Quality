@@ -417,7 +417,6 @@
             if(section === 'inventario') renderInventory();
         }
 
-        // TRABAJOS EXTRAS - Funciones
         function addExtraRow() {
             extrasList.push({ id: Date.now(), description: '', qty: 1, price: 0 });
             renderExtrasTable();
@@ -788,6 +787,121 @@
             info.innerHTML = '<small>' + html + '</small>';
         }
 
+        // FUNCIÓN AUXILIAR: Generar número de correlativo
+        function generateQuoteNumber() {
+            return 'COT-' + Date.now().toString().slice(-6);
+        }
+
+        // FUNCIÓN AUXILIAR: Construir mensaje de cotización (usado por WhatsApp y Correo)
+        function buildQuoteMessage(calc, quoteNumber) {
+            const client = document.getElementById('clientName').value || 'Cliente';
+            const date = document.getElementById('quoteDate').value || new Date().toLocaleDateString();
+            
+            let msg = `*COTIZACIÓN N° ${quoteNumber}*\n`;
+            msg += `Fecha: ${date}\n`;
+            msg += `Cliente: ${client}\n\n`;
+            msg += `Estimado/a ${client},\n\n`;
+            msg += `Junto con saludar, le hacemos llegar la cotización solicitada para el trabajo de pavimento de hormigón estampado.\n\n`;
+            msg += `*DETALLE DE LA COTIZACIÓN:*\n`;
+            msg += `📐 Superficie: ${calc.m2} m²\n`;
+            msg += `📋 Precio por m²: $${formatMoney(calc.pricePerM2)}\n`;
+            msg += `💵 Subtotal: $${formatMoney(calc.subtotal)}\n`;
+            
+            if (calc.extrasTotal > 0) {
+                msg += `\n*TRABAJOS EXTRAS:*\n`;
+                extrasList.forEach(extra => {
+                    if (extra.description) {
+                        const qtyText = extra.qty > 1 ? ` (${extra.qty} unid)` : '';
+                        msg += `➕ ${extra.description}${qtyText}: $${formatMoney((extra.qty || 0) * (extra.price || 0))}\n`;
+                    }
+                });
+                msg += `Subtotal extras: $${formatMoney(calc.extrasTotal)}\n`;
+            }
+            
+            msg += `\n*RESUMEN:*\n`;
+            msg += `Subtotal: $${formatMoney(calc.subtotalWithExtras)}\n`;
+            if (calc.includeIVA) {
+                msg += `IVA (19%): $${formatMoney(calc.iva)}\n`;
+            }
+            msg += `*TOTAL: $${formatMoney(calc.total)}*\n\n`;
+            
+            msg += `*ALCANCE DEL PROYECTO:*\n`;
+            msg += `✓ Preparación, nivelación y compactación del terreno\n`;
+            msg += `✓ Instalación de malla ACMA C92\n`;
+            msg += `✓ Hormigón premezclado HN25, espesor 10 cm\n`;
+            msg += `✓ Incorporación de fibra de polipropileno\n`;
+            msg += `✓ Barrera antihumedad de polietileno\n`;
+            msg += `✓ Endurecedor con color a elección\n`;
+            msg += `✓ Estampado con moldes profesionales\n`;
+            msg += `✓ Diseño y color a elección del cliente\n`;
+            msg += `✓ Juntas y cortes de dilatación\n`;
+            msg += `✓ Sello acrílico protector de alto rendimiento\n`;
+            msg += `✓ Limpieza y entrega final del proyecto\n\n`;
+            
+            msg += `*GARANTÍA:*\n231 días corridos sobre instalación, materiales y terminaciones ejecutadas por nuestra empresa, aplicable a fallas atribuibles al proceso constructivo.\n\n`;
+            
+            msg += `*CONDICIONES DE PAGO:*\n`;
+            msg += `• Anticipo: 50% para iniciar\n`;
+            msg += `• Saldo: contra entrega\n`;
+            msg += `• Formas de pago: Transferencia bancaria, Débito, Crédito o Efectivo\n\n`;
+            
+            msg += `Esta cotización tiene una vigencia de 16 días naturales. Los precios incluyen únicamente los conceptos descritos. Cualquier trabajo adicional se cotizará por separado.\n\n`;
+            
+            msg += `Quedamos atentos a sus comentarios para coordinar los próximos pasos.\n\n`;
+            
+            msg += `Saludos cordiales,\n\n`;
+            msg += `*Construcción y Remodelaciones Quality SpA*\n`;
+            msg += `RUT: 78.339.203-8\n`;
+            msg += `📱 WhatsApp: +56 9 2821 3391\n`;
+            msg += `📸 Instagram: @hormigon_estampado.quality\n`;
+            msg += `Presupuesto válido por 16 días`;
+            
+            return msg;
+        }
+
+        // ENVIAR POR WHATSAPP - SIN DESCARGAR PDF
+        async function sendWhatsApp() {
+            const calc = calculateTotal();
+            if (calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
+            const phone = document.getElementById('clientPhone').value.replace(/\D/g, '');
+            if (!phone) { alert('Ingrese un teléfono válido'); return; }
+            
+            const quoteNumber = generateQuoteNumber();
+            const message = buildQuoteMessage(calc, quoteNumber);
+            
+            // Detectar si es móvil o PC
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            
+            let whatsappUrl;
+            if (isMobile) {
+                // Abre la app de WhatsApp en el móvil
+                whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            } else {
+                // Abre WhatsApp Web en el PC
+                whatsappUrl = `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+            }
+            
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // ENVIAR POR CORREO - SIN DESCARGAR PDF
+        async function sendEmail() {
+            const calc = calculateTotal();
+            if (calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
+            const email = document.getElementById('clientEmail').value;
+            if (!email) { alert('Ingrese un correo válido'); return; }
+            
+            const quoteNumber = generateQuoteNumber();
+            const client = document.getElementById('clientName').value || 'Cliente';
+            const subject = `Cotización N° ${quoteNumber} - Pavimento de Hormigón Estampado | ${client}`;
+            
+            // Construir cuerpo del correo en texto plano (compatible con mailto)
+            const message = buildQuoteMessage(calc, quoteNumber);
+            
+            // Abrir cliente de correo
+            window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+        }
+
         async function generatePDF() {
             const calc = calculateTotal();
             if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
@@ -799,7 +913,7 @@
             const email = document.getElementById('clientEmail').value || '';
             const address = document.getElementById('clientAddress').value || '';
             const date = document.getElementById('quoteDate').value || new Date().toLocaleDateString();
-            const quoteNumber = 'COT-' + Date.now().toString().slice(-6);
+            const quoteNumber = generateQuoteNumber();
             const primaryColor = [79, 70, 229], darkColor = [30, 41, 59], grayColor = [100, 116, 139];
 
             if(logoBase64) doc.addImage(logoBase64, 'PNG', 15, 12, 25, 25);
@@ -832,13 +946,9 @@
             doc.text('Forma de pago: transferencia bancaria', 110, 72);
             doc.text('Débito / Crédito / Efectivo', 110, 77);
 
-            // TABLA CON HORMIGÓN + EXTRAS + IVA
             let tableBody = [];
-            
-            // Fila principal de hormigón
             tableBody.push(['Hormigón Estampado', calc.m2 + ' m²', '$' + formatMoney(calc.pricePerM2) + '/m²', '$' + formatMoney(calc.subtotal)]);
             
-            // Filas de trabajos extras
             extrasList.forEach(extra => {
                 const importe = (extra.qty || 0) * (extra.price || 0);
                 if(extra.description && importe > 0) {
@@ -847,7 +957,6 @@
                 }
             });
             
-            // Filas de totales
             if (calc.includeIVA) {
                 tableBody.push([{ content: 'Subtotal', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.subtotalWithExtras)]);
                 tableBody.push([{ content: 'IVA (19%)', colSpan: 3, styles: { halign: 'right', fontStyle: 'normal' } }, '$' + formatMoney(calc.iva)]);
@@ -934,7 +1043,6 @@
             doc.text('Los precios incluyen únicamente los conceptos descritos.', 15, currentY); currentY += 3.5;
             doc.text('Cualquier trabajo adicional se cotizará por separado.', 15, currentY);
 
-            // FOOTER COMPACTO
             doc.setFillColor(...primaryColor);
             doc.rect(0, 275, 210, 22, 'F');
             doc.setFontSize(10); doc.setTextColor(255, 255, 255); doc.setFont(undefined, 'bold');
@@ -946,49 +1054,6 @@
 
             doc.save('Cotizacion_' + client.replace(/\s+/g, '_') + '_' + quoteNumber + '.pdf');
             return doc;
-        }
-
-        async function sendWhatsApp() {
-            const calc = calculateTotal(); if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
-            const phone = document.getElementById('clientPhone').value.replace(/\D/g, '');
-            const client = document.getElementById('clientName').value || 'Cliente';
-            if(!phone) { alert('Ingrese un teléfono'); return; }
-            await generatePDF();
-            let msg = '*COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO*\n\nEstimado ' + client + ',\n\nAdjunto encontrará la cotización detallada.\n\n *Superficie:* ' + calc.m2 + ' m²\n💰 *Valor total:* $' + formatMoney(calc.total) + '\n📋 *Precio:* $' + formatMoney(calc.pricePerM2) + '/m²\n';
-            if (calc.includeIVA) { msg += '💵 *Subtotal:* $' + formatMoney(calc.subtotalWithExtras) + '\n🧾 *IVA (19%):* $' + formatMoney(calc.iva) + '\n'; }
-            msg += '\n';
-            if(extrasList.length > 0) {
-                msg += '*TRABAJOS EXTRAS:*\n';
-                extrasList.forEach(extra => {
-                    if(extra.description) msg += '➕ ' + extra.description + ': $' + formatMoney((extra.qty || 0) * (extra.price || 0)) + '\n';
-                });
-                msg += '\n';
-            }
-            if(selectedItems.length > 0) { msg += '*ITEMS INCLUIDOS:*\n'; selectedItems.forEach(item => { msg += '✓ ' + item.name + '\n'; }); msg += '\n'; }
-            msg += '*ALCANCE DEL PROYECTO:*\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra de polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor con color\n✓ Estampado profesional\n✓ Juntas y dilatación\n✓ Sello acrílico\n✓ Limpieza y entrega\n\n*GARANTÍA:* 231 días\n\n*FORMA DE PAGO:*\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• NO SOLICITAMOS ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality\nVálido 16 días';
-            setTimeout(() => { window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank'); alert('✅ PDF descargado. Adjúntelo en WhatsApp.'); }, 500);
-        }
-
-        async function sendEmail() {
-            const calc = calculateTotal(); if(calc.m2 === 0) { alert('Ingrese la superficie en m²'); return; }
-            const email = document.getElementById('clientEmail').value;
-            const client = document.getElementById('clientName').value || 'Cliente';
-            if(!email) { alert('Ingrese un correo'); return; }
-            await generatePDF();
-            const subject = 'COTIZACIÓN — PAVIMENTO DE HORMIGÓN ESTAMPADO | ' + client;
-            let body = 'Estimado ' + client + ',\n\nAdjunto cotización detallada.\n\n📐 Superficie: ' + calc.m2 + ' m²\n💰 Total: $' + formatMoney(calc.total) + '\n Precio: $' + formatMoney(calc.pricePerM2) + '/m²\n';
-            if (calc.includeIVA) { body += '💵 Subtotal: $' + formatMoney(calc.subtotalWithExtras) + '\n🧾 IVA (19%): $' + formatMoney(calc.iva) + '\n'; }
-            body += '\n';
-            if(extrasList.length > 0) {
-                body += 'TRABAJOS EXTRAS:\n';
-                extrasList.forEach(extra => {
-                    if(extra.description) body += '➕ ' + extra.description + ': $' + formatMoney((extra.qty || 0) * (extra.price || 0)) + '\n';
-                });
-                body += '\n';
-            }
-            if(selectedItems.length > 0) { body += 'ITEMS INCLUIDOS:\n'; selectedItems.forEach(item => { body += '✓ ' + item.name + '\n'; }); body += '\n'; }
-            body += 'ALCANCE:\n✓ Preparación y compactación\n✓ Malla ACMA C92\n✓ Hormigón HN25, 10 cm\n✓ Fibra polipropileno\n✓ Barrera antihumedad\n✓ Endurecedor color\n✓ Estampado profesional\n✓ Juntas dilatación\n✓ Sello acrílico\n✓ Limpieza final\n\nGARANTÍA: 231 días\n\nPAGO:\n• 50% inicio - 50% entrega\n• Transferencia/Débito/Crédito/Efectivo\n• SIN ANTICIPO\n\nQuality SpA\nRUT: 78.339.203-8\nWhatsApp: +56 9 2821 3391\nInstagram: @hormigon_estampado.quality';
-            setTimeout(() => { window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body); alert('✅ PDF descargado. Adjúntelo en el correo.'); }, 500);
         }
 
         function formatMoney(amount) { return new Intl.NumberFormat('es-CL', { minimumFractionDigits: 0 }).format(amount); }
